@@ -63,12 +63,15 @@ async fn main() -> std::io::Result<()> {
     }
 
     // load SSL keys
-    let mut config = {
-        let (cert_chain, key_der) = load_ssl_keys();
-        ServerConfig::builder()
-            .with_safe_defaults()
-            .with_no_client_auth()
-            .with_single_cert(cert_chain, key_der).unwrap()
+    let mut session_config = {
+        match load_ssl_keys() {
+            (cert_chain, key_der) => {
+                ServerConfig::builder()
+                    .with_safe_defaults()
+                    .with_no_client_auth()
+                    .with_single_cert(cert_chain, key_der).unwrap()
+            }
+        }
     };
 
     trace!("Reading config...");
@@ -106,7 +109,7 @@ async fn main() -> std::io::Result<()> {
     });
     trace!("binding ports");
     http_server
-        .bind_rustls(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.https.0), config)?
+        .bind_rustls(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.https.0), session_config)?
         .bind(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.http.0))?
         .run()
         .await?;
