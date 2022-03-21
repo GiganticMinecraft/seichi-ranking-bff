@@ -1,6 +1,5 @@
 mod handler;
-
-extern crate core;
+mod config;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -11,6 +10,7 @@ use log::{error, info, trace};
 use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
+use crate::config::config::Config;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
@@ -106,8 +106,8 @@ async fn main() -> std::io::Result<()> {
     });
     trace!("binding ports");
     http_server
-        .bind_rustls(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().https_port), config)?
-        .bind(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().http_port))?
+        .bind_rustls(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.https.0), config)?
+        .bind(format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.http.0))?
         .run()
         .await?;
 
