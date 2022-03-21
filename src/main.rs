@@ -3,9 +3,10 @@ mod config;
 
 use std::fs::File;
 use std::io::BufReader;
-use actix_web::{App, HttpResponse, HttpServer, web};
+use actix_web::{App, HttpRequest, HttpResponse, HttpServer, web};
+use actix_web::error::JsonPayloadError;
 use actix_web::web::JsonConfig;
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use log::{error, info, trace};
 use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
@@ -49,6 +50,23 @@ fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
     (cert_chain, keys.remove(0))
 }
 
+fn json_error_handler(err: actix_web::error::JsonPayloadError, _req: &HttpRequest) -> actix_web::error::Error {
+    use actix_web::error::InternalError;
+    let detail = err.to_string();
+    error!("error during handling JSON, in {:?}: {:?}", _req, err);
+
+    let resp = match &err {
+        JsonPayloadError::ContentType => {
+            HttpResponse::UnsupportedMediaType().body(detail)
+        }
+        JsonPayloadError::Deserialize(json_err) if json_err.is_data() => {
+            HttpResponse::UnprocessableEntity().body(detail)
+        }
+        _ => HttpResponse::BadRequest().body(detail),
+    };
+    InternalError::from_response(err, resp).into()
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // This function contains code snippet which is licensed with Apache License 2.0
@@ -81,9 +99,7 @@ async fn main() -> std::io::Result<()> {
     let mut http_server = HttpServer::new(|| {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
-            .app_data(
-                JsonConfig::default().error_handler(handler::json_error_handler)
-            )
+            .app_data(json_error_handler)
             .service(
                 web::resource("/ranking/periodic")
                     .route(
