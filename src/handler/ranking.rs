@@ -1,1 +1,1 @@
-pub(crate) mod periodic;
+pub mod periodic;

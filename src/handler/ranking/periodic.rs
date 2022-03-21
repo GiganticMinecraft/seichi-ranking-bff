@@ -17,10 +17,10 @@ impl TryFrom<&str> for RankingType {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "break" => Ok(RankingType::Break),
-            "build" => Ok(RankingType::Build),
-            "playtime" => Ok(RankingType::PlayTime),
-            "vote" => Ok(RankingType::Vote),
+            "break" => Ok(Self::Break),
+            "build" => Ok(Self::Build),
+            "playtime" => Ok(Self::PlayTime),
+            "vote" => Ok(Self::Vote),
             _ => Err(RankingTypeCoercionError::InvalidSpecifier),
         }
     }
@@ -52,15 +52,15 @@ impl TryFrom<&str> for RankingPeriod {
         }
     }
 }
-pub(crate) async fn periodic(req: HttpRequest) -> impl Responder {
+pub async fn periodic(req: HttpRequest) -> impl Responder {
     let qs: QString =  req.query_string().into();
 
-    let kind: RankingType = match qs.get("type").unwrap_or("break").try_into() {
+    let _kind: RankingType = match qs.get("type").unwrap_or("break").try_into() {
         Ok(t) => t,
         Err(_e) => return HttpResponse::BadRequest().body("")
     };
 
-    let duration: RankingPeriod = match qs.get("duration").unwrap_or("total").try_into() {
+    let _duration: RankingPeriod = match qs.get("duration").unwrap_or("total").try_into() {
         Ok(t) => t,
         Err(_e) => return HttpResponse::BadRequest().body("")
     };

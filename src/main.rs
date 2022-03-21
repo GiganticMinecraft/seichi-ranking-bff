@@ -9,8 +9,7 @@ use std::fs::File;
 use std::io::BufReader;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, web};
 use actix_web::error::JsonPayloadError;
-use actix_web::web::JsonConfig;
-use anyhow::{anyhow, Context};
+use anyhow::{Context};
 use log::{error, info, trace};
 use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
@@ -20,8 +19,8 @@ use crate::config::config::Config;
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
 fn setup_logger() -> Result<(), fern::InitError> {
-    use fern::colors::*;
-    let mut colors = ColoredLevelConfig::new();
+    use fern::colors::ColoredLevelConfig;
+    let colors = ColoredLevelConfig::new();
 
     fern::Dispatch::new()
         .format(move |out, message, record| {
@@ -85,7 +84,7 @@ async fn main() -> std::io::Result<()> {
     }
 
     // load SSL keys
-    let mut session_config = {
+    let session_config = {
         match load_ssl_keys() {
             (cert_chain, key_der) => {
                 ServerConfig::builder()
@@ -100,7 +99,7 @@ async fn main() -> std::io::Result<()> {
     let running_config = File::open("data/config.json").unwrap();
     RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap());
     trace!("building HttpServer");
-    let mut http_server = HttpServer::new(|| {
+    let http_server = HttpServer::new(|| {
         use crate::handler::ranking::{periodic::periodic};
 
         App::new()
