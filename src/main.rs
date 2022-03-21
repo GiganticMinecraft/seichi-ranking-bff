@@ -30,7 +30,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
                 record.target(),
                 colors.color(record.level()),
                 message
-            ))
+            ));
         })
         .level(log::LevelFilter::Trace)
         .chain(std::io::stdout())
@@ -53,10 +53,10 @@ fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
     (cert_chain, keys.remove(0))
 }
 
-fn json_error_handler(err: actix_web::error::JsonPayloadError, _req: &HttpRequest) -> actix_web::error::Error {
+fn json_error_handler(err: actix_web::error::JsonPayloadError, req: &HttpRequest) -> actix_web::error::Error {
     use actix_web::error::InternalError;
     let detail = err.to_string();
-    error!("error during handling JSON, in {:?}: {:?}", _req, err);
+    error!("error during handling JSON, in {:?}: {:?}", req, err);
 
     let resp = match &err {
         JsonPayloadError::ContentType => {
@@ -85,19 +85,16 @@ async fn main() -> std::io::Result<()> {
 
     // load SSL keys
     let session_config = {
-        match load_ssl_keys() {
-            (cert_chain, key_der) => {
-                ServerConfig::builder()
-                    .with_safe_defaults()
-                    .with_no_client_auth()
-                    .with_single_cert(cert_chain, key_der).unwrap()
-            }
-        }
+        let (cert_chain, key_der) = load_ssl_keys();
+        ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(cert_chain, key_der).unwrap()
     };
 
     trace!("Reading config...");
     let running_config = File::open("data/config.json").unwrap();
-    RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap());
+    RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap()).expect("set failed");
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
         use crate::handler::ranking::{periodic::periodic};
