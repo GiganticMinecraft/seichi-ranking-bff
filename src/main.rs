@@ -1,3 +1,7 @@
+#![deny(clippy::all, clippy::cargo)]
+#![warn(clippy::nursery, clippy::pedantic)]
+#![allow(clippy::cargo_common_metadata)]
+
 mod handler;
 mod config;
 
