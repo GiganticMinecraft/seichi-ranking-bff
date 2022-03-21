@@ -1,2 +1,2 @@
 mod generic;
-mod ranking;
+pub(crate) mod ranking;
