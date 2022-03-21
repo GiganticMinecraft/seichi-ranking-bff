@@ -101,6 +101,8 @@ async fn main() -> std::io::Result<()> {
     RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap());
     trace!("building HttpServer");
     let mut http_server = HttpServer::new(|| {
+        use crate::handler::ranking::{periodic::periodic};
+
         App::new()
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
@@ -108,10 +110,11 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/ranking/periodic")
                     .route(
                         web::get()
-                            .to(todo!()) // periodic-ranking handler
+                            .to(periodic) // periodic-ranking handler
                     )
 
             )
+            /*
             .service(
                 web::resource("/ranking/player/{}")
                     .route(
@@ -126,6 +129,8 @@ async fn main() -> std::io::Result<()> {
                             .to(todo!())
                     )
             )
+
+             */
     });
     trace!("binding ports");
     http_server
