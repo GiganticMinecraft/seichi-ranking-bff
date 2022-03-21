@@ -7,7 +7,7 @@ pub(crate) struct Config {
 }
 
 #[derive(Deserialize)]
-struct DatabaseAuthorizationInfo {
+pub(crate) struct DatabaseAuthorizationInfo {
     pub(crate) host: String,
     pub(crate) port: Port,
     pub(crate) user: String,
@@ -15,10 +15,10 @@ struct DatabaseAuthorizationInfo {
 }
 
 #[derive(Deserialize)]
-struct ServicePorts {
+pub(crate) struct ServicePorts {
     pub(crate) https: Port,
     pub(crate) http: Port,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Port(pub(crate) u16);
+pub(crate) struct Port(pub(crate) u16);
