@@ -14,7 +14,7 @@ use log::{error, info, trace};
 use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
-use crate::config::config::Config;
+use crate::config::Config;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
