@@ -51,12 +51,12 @@ impl Initialization {
         trace!("loading cert.pem");
         let cert_chain = {
             let cert_file = &mut File::open("cert.pem").unwrap().buffered();
-            certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect()
+            certs(cert_file).unwrap().iter().map(|bytes| Certificate(bytes.clone())).collect()
         };
         trace!("loading key.pem");
         let mut keys = {
             let key_file = &mut File::open("key.pem").unwrap().buffered();
-            pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>()
+            pkcs8_private_keys(key_file).unwrap().iter().map(|bytes| PrivateKey(bytes.clone())).collect::<Vec<_>>()
         };
 
         if keys.is_empty() {
