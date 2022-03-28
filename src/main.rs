@@ -64,6 +64,12 @@ impl Initialization {
 
         (cert_chain, keys.remove(0))
     }
+
+    fn set_config() {
+        trace!("Reading config...");
+        let running_config = File::open("data/config.json").unwrap();
+        RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap()).expect("set failed");
+    }
 }
 
 fn json_error_handler(err: actix_web::error::JsonPayloadError, req: &HttpRequest) -> actix_web::error::Error {
@@ -105,9 +111,7 @@ async fn main() -> std::io::Result<()> {
         .with_single_cert(cert_chain, key_der).unwrap()
     };
 
-    trace!("Reading config...");
-    let running_config = File::open("data/config.json").unwrap();
-    RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap()).expect("set failed");
+    Initialization::set_config();
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
         use crate::handler::ranking::{periodic::periodic};
