@@ -18,7 +18,7 @@ use rustls::{Certificate, PrivateKey, ServerConfig};
 use crate::config::Config;
 use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search_player;
-use crate::ext::buffered::*;
+use crate::ext::buffered::BufferedRead;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
