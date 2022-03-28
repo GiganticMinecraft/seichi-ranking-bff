@@ -21,40 +21,44 @@ use crate::handler::search::player::search_player;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
-fn setup_logger() -> Result<(), fern::InitError> {
-    use fern::colors::ColoredLevelConfig;
-    let colors = ColoredLevelConfig::new();
+struct Initialization;
 
-    fern::Dispatch::new()
-        .format(move |out, message, record| {
-            out.finish(format_args!(
-                "{}[{}][{}] {}",
-                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
-                record.target(),
-                colors.color(record.level()),
-                message
-            ));
-        })
-        .level(log::LevelFilter::Trace)
-        .chain(std::io::stdout())
-        .chain(fern::log_file("output.log")?)
-        .apply()?;
-    Ok(())
-}
+impl Initialization {
+    fn setup_logger() -> Result<(), fern::InitError> {
+        use fern::colors::ColoredLevelConfig;
+        let colors = ColoredLevelConfig::new();
 
-fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
-    trace!("loading cert.pem");
-    let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
-    let cert_chain = certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect();
-    trace!("loading key.pem");
-    let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
-    let mut keys = pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>();
-    if keys.is_empty() {
-        error!("Could not locate PKCS 8 private keys.");
-        panic!("Aborting due to previous error");
+        fern::Dispatch::new()
+            .format(move |out, message, record| {
+                out.finish(format_args!(
+                    "{}[{}][{}] {}",
+                    chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                    record.target(),
+                    colors.color(record.level()),
+                    message
+                ));
+            })
+            .level(log::LevelFilter::Trace)
+            .chain(std::io::stdout())
+            .chain(fern::log_file("output.log")?)
+            .apply()?;
+        Ok(())
     }
 
-    (cert_chain, keys.remove(0))
+    fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
+        trace!("loading cert.pem");
+        let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
+        let cert_chain = certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect();
+        trace!("loading key.pem");
+        let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
+        let mut keys = pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>();
+        if keys.is_empty() {
+            error!("Could not locate PKCS 8 private keys.");
+            panic!("Aborting due to previous error");
+        }
+
+        (cert_chain, keys.remove(0))
+    }
 }
 
 fn json_error_handler(err: actix_web::error::JsonPayloadError, req: &HttpRequest) -> actix_web::error::Error {
@@ -80,7 +84,7 @@ async fn main() -> std::io::Result<()> {
     // from https://github.com/actix/examples.
     // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
-    match setup_logger().context("failed to setup logger") {
+    match Initialization::setup_logger().context("failed to setup logger") {
         Ok(_) => {}
         Err(err) => {
             eprintln!("failed to initialize logger: {:?}", err);
@@ -89,7 +93,7 @@ async fn main() -> std::io::Result<()> {
 
     // load SSL keys
     let session_config = {
-        let (cert_chain, key_der) = load_ssl_keys();
+        let (cert_chain, key_der) = Initialization::load_ssl_keys();
         ServerConfig::builder()
         .with_safe_defaults()
         .with_no_client_auth()
