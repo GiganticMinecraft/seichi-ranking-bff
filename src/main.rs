@@ -15,6 +15,7 @@ use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use crate::config::Config;
+use crate::handler::ranking::player::global_ranking_for_player;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
@@ -112,10 +113,10 @@ async fn main() -> std::io::Result<()> {
             )
             /*
             .service(
-                web::resource("/ranking/player/{}")
+                web::resource("/ranking/player/{name}")
                     .route(
                         web::get()
-                            .to(todo!()) // player-specific handler
+                            .to(global_ranking_for_player) // player-specific handler
                     )
             )
             .service(
