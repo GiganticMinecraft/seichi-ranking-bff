@@ -1,4 +1,6 @@
+use std::ops::Deref;
 use actix_web::{HttpRequest, HttpResponse, Responder};
+use actix_web::http::header::{IF_UNMODIFIED_SINCE};
 use qstring::QString;
 
 enum RankingType {
@@ -52,6 +54,8 @@ impl TryFrom<&str> for RankingPeriod {
         }
     }
 }
+
+#[allow(clippy::unused_async)]
 pub async fn periodic(req: HttpRequest) -> impl Responder {
     let qs: QString =  req.query_string().into();
 
@@ -65,7 +69,10 @@ pub async fn periodic(req: HttpRequest) -> impl Responder {
         Err(_e) => return HttpResponse::BadRequest().body("")
     };
 
-    HttpResponse::Ok().json(vec![
-        1
-    ])
+    req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
+        || HttpResponse::Ok().json(vec![
+            1
+        ]),
+        |if_unmodified_since| HttpResponse::NotModified().body("")
+    )
 }
