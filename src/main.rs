@@ -5,6 +5,7 @@
 mod handler;
 mod config;
 mod model;
+mod ext;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -17,6 +18,7 @@ use rustls::{Certificate, PrivateKey, ServerConfig};
 use crate::config::Config;
 use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search_player;
+use crate::ext::buffered::*;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
@@ -48,12 +50,12 @@ impl Initialization {
         use rustls_pemfile::{certs, pkcs8_private_keys};
         trace!("loading cert.pem");
         let cert_chain = {
-            let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
+            let cert_file = &mut File::open("cert.pem").unwrap().buffered();
             certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect()
         };
         trace!("loading key.pem");
         let mut keys = {
-            let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
+            let key_file = &mut File::open("key.pem").unwrap().buffered();
             pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>()
         };
 
@@ -67,7 +69,7 @@ impl Initialization {
 
     fn set_config() {
         trace!("Reading config...");
-        let running_config = File::open("data/config.json").unwrap();
+        let running_config = File::open("data/config.json").unwrap().buffered();
         RUNNING_CONFIG.set(serde_json::from_reader(BufReader::new(running_config)).unwrap()).expect("set failed");
     }
 }
