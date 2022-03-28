@@ -4,6 +4,7 @@
 
 mod handler;
 mod config;
+mod model;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -123,7 +124,7 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/general/player/{}")
                     .route(
                         web::get()
-                            .to(todo!())
+                            .to(search_player)
                     )
             )
 

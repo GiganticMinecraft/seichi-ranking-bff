@@ -1,2 +1,2 @@
-mod generic;
+pub mod search;
 pub mod ranking;
