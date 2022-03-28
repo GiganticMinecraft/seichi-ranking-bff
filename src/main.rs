@@ -14,7 +14,6 @@ use anyhow::{Context};
 use log::{error, info, trace};
 use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
-use rustls_pemfile::{certs, pkcs8_private_keys};
 use crate::config::Config;
 use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search_player;
@@ -46,6 +45,7 @@ impl Initialization {
     }
 
     fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
+        use rustls_pemfile::{certs, pkcs8_private_keys};
         trace!("loading cert.pem");
         let cert_chain = {
             let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
