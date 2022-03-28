@@ -17,6 +17,7 @@ use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use crate::config::Config;
 use crate::handler::ranking::player::global_ranking_for_player;
+use crate::handler::search::player::search_player;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
@@ -50,6 +51,7 @@ fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
     let mut keys = pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>();
     if keys.is_empty() {
         error!("Could not locate PKCS 8 private keys.");
+        panic!("Aborting due to previous error");
     }
 
     (cert_chain, keys.remove(0))
@@ -105,30 +107,29 @@ async fn main() -> std::io::Result<()> {
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
             .service(
+                // legacy=SeichiRanking:/api/ranking
                 web::resource("/ranking/v1/global/periodic")
                     .route(
                         web::get()
                             .to(periodic) // periodic-ranking handler
                     )
-
             )
-            /*
             .service(
-                web::resource("/ranking/v1/player/{name}")
+                // legacy=SeichiRanking:/api/ranking/player/uuid
+                web::resource("/ranking/v1/player/{uuid}")
                     .route(
                         web::get()
                             .to(global_ranking_for_player) // player-specific handler
                     )
             )
             .service(
-                web::resource("/general/player/{}")
+                // legacy=/api/search/player
+                web::resource("/search/v1/player/{uuid}")
                     .route(
                         web::get()
                             .to(search_player)
                     )
             )
-
-             */
     });
     trace!("binding ports");
     http_server
