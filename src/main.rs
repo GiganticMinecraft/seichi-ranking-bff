@@ -104,7 +104,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
             .service(
-                web::resource("/ranking/periodic")
+                web::resource("/ranking/v1/global/periodic")
                     .route(
                         web::get()
                             .to(periodic) // periodic-ranking handler
@@ -113,7 +113,7 @@ async fn main() -> std::io::Result<()> {
             )
             /*
             .service(
-                web::resource("/ranking/player/{name}")
+                web::resource("/ranking/v1/player/{name}")
                     .route(
                         web::get()
                             .to(global_ranking_for_player) // player-specific handler
