@@ -47,11 +47,16 @@ impl Initialization {
 
     fn load_ssl_keys() -> (Vec<Certificate>, PrivateKey) {
         trace!("loading cert.pem");
-        let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
-        let cert_chain = certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect();
+        let cert_chain = {
+            let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
+            certs(cert_file).unwrap().iter().map(|a| Certificate(a.clone())).collect()
+        };
         trace!("loading key.pem");
-        let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
-        let mut keys = pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>();
+        let mut keys = {
+            let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
+            pkcs8_private_keys(key_file).unwrap().iter().map(|x| PrivateKey(x.clone())).collect::<Vec<_>>()
+        };
+
         if keys.is_empty() {
             error!("Could not locate PKCS 8 private keys.");
             panic!("Aborting due to previous error");
