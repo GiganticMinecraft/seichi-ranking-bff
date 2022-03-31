@@ -10,6 +10,7 @@ struct Model {
 }
 
 #[allow(clippy::unused_async)]
+#[actix_web::get("/seichi/search/v1/player")]
 pub async fn search(req: HttpRequest) -> impl Responder {
     let qs = QString::from(req.query_string());
     let query = match qs.get("q") {

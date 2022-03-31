@@ -56,6 +56,7 @@ impl TryFrom<&str> for RankingPeriod {
 }
 
 #[allow(clippy::unused_async)]
+#[actix_web::get("/seichi/ranking/v1/global/periodic")]
 pub async fn periodic(req: HttpRequest) -> impl Responder {
     let qs: QString =  req.query_string().into();
 

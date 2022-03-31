@@ -121,30 +121,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
-            .service(
-                // legacy=SeichiRanking:/api/ranking
-                web::resource("/seichi/ranking/v1/global/periodic")
-                    .route(
-                        web::get()
-                            .to(periodic) // periodic-ranking handler
-                    )
-            )
-            .service(
-                // legacy=SeichiRanking:/api/ranking/player/uuid
-                web::resource("/seichi/ranking/v1/player/{uuid}")
-                    .route(
-                        web::get()
-                            .to(global_ranking_for_player) // player-specific handler
-                    )
-            )
-            .service(
-                // legacy=SeichiRanking:/api/search/player
-                web::resource("/seichi/search/v1/player")
-                    .route(
-                        web::get()
-                            .to(search)
-                    )
-            )
+            .service(periodic)
+            .service(global_ranking_for_player)
+            .service(search)
     });
     trace!("binding ports");
     http_server
