@@ -123,7 +123,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(json_error_handler)
             .service(
                 // legacy=SeichiRanking:/api/ranking
-                web::resource("/ranking/v1/global/periodic")
+                web::resource("/seichi/ranking/v1/global/periodic")
                     .route(
                         web::get()
                             .to(periodic) // periodic-ranking handler
@@ -131,15 +131,15 @@ async fn main() -> std::io::Result<()> {
             )
             .service(
                 // legacy=SeichiRanking:/api/ranking/player/uuid
-                web::resource("/ranking/v1/player/{uuid}")
+                web::resource("/seichi/ranking/v1/player/{uuid}")
                     .route(
                         web::get()
                             .to(global_ranking_for_player) // player-specific handler
                     )
             )
             .service(
-                // legacy=/api/search/player
-                web::resource("/search/v1/player/{uuid}")
+                // legacy=SeichiRanking:/api/search/player
+                web::resource("/seichi/search/v1/player")
                     .route(
                         web::get()
                             .to(search)
