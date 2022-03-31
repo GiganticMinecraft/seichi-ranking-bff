@@ -10,7 +10,7 @@ struct Model {
 }
 
 #[allow(clippy::unused_async)]
-pub async fn search_player(req: HttpRequest) -> impl Responder {
+pub async fn search(req: HttpRequest) -> impl Responder {
     let qs = QString::from(req.query_string());
     let query = match qs.get("q") {
         None => {
