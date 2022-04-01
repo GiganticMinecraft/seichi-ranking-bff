@@ -1,7 +1,7 @@
-use std::ops::Deref;
+use actix_web::http::header::IF_UNMODIFIED_SINCE;
 use actix_web::{HttpRequest, HttpResponse, Responder};
-use actix_web::http::header::{IF_UNMODIFIED_SINCE};
 use qstring::QString;
+use std::ops::Deref;
 
 enum RankingType {
     Break,
@@ -11,7 +11,7 @@ enum RankingType {
 }
 
 enum RankingTypeCoercionError {
-    InvalidSpecifier
+    InvalidSpecifier,
 }
 
 impl TryFrom<&str> for RankingType {
@@ -37,7 +37,7 @@ enum RankingPeriod {
 }
 
 enum RankingPeriodCoercionError {
-    InvalidSpecifier
+    InvalidSpecifier,
 }
 
 impl TryFrom<&str> for RankingPeriod {
@@ -50,7 +50,7 @@ impl TryFrom<&str> for RankingPeriod {
             "monthly" => Ok(Self::Monthly),
             "weekly" => Ok(Self::Weekly),
             "daily" => Ok(Self::Daily),
-            _ => Err(RankingPeriodCoercionError::InvalidSpecifier)
+            _ => Err(RankingPeriodCoercionError::InvalidSpecifier),
         }
     }
 }
@@ -58,22 +58,20 @@ impl TryFrom<&str> for RankingPeriod {
 #[allow(clippy::unused_async)]
 #[actix_web::get("/seichi/ranking/v1/global/periodic")]
 pub async fn periodic(req: HttpRequest) -> impl Responder {
-    let qs: QString =  req.query_string().into();
+    let qs: QString = req.query_string().into();
 
     let _kind: RankingType = match qs.get("type").unwrap_or("break").try_into() {
         Ok(t) => t,
-        Err(_e) => return HttpResponse::BadRequest().body("")
+        Err(_e) => return HttpResponse::BadRequest().body(""),
     };
 
     let _duration: RankingPeriod = match qs.get("duration").unwrap_or("total").try_into() {
         Ok(t) => t,
-        Err(_e) => return HttpResponse::BadRequest().body("")
+        Err(_e) => return HttpResponse::BadRequest().body(""),
     };
 
     req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
-        || HttpResponse::Ok().json(vec![
-            1
-        ]),
-        |if_unmodified_since| HttpResponse::NotModified().body("")
+        || HttpResponse::Ok().json(vec![1]),
+        |if_unmodified_since| HttpResponse::NotModified().body(""),
     )
 }

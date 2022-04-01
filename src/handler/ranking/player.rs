@@ -1,5 +1,5 @@
-use actix_web::{HttpRequest, HttpResponse, Responder};
 use actix_web::web::Path;
+use actix_web::{HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use uuid::Uuid;
 
