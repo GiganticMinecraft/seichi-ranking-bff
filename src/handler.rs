@@ -1,2 +1,2 @@
-pub mod search;
 pub mod ranking;
+pub mod search;

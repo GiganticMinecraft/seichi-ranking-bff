@@ -1,12 +1,12 @@
+use crate::model::Player;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use qstring::QString;
 use serde::Serialize;
-use crate::model::Player;
 
 #[derive(Serialize)]
 struct Model {
     result_count: usize,
-    found_players: Vec<Player>
+    found_players: Vec<Player>,
 }
 
 #[allow(clippy::unused_async)]
@@ -17,7 +17,7 @@ pub async fn search(req: HttpRequest) -> impl Responder {
         None => {
             return HttpResponse::BadRequest().body("no query given");
         }
-        Some(a) => a
+        Some(a) => a,
     };
 
     let limit = match qs.get("lim") {
@@ -25,7 +25,7 @@ pub async fn search(req: HttpRequest) -> impl Responder {
         Some(a) => match a.parse() {
             Ok(a) => a,
             Err(v) => return HttpResponse::BadRequest().body(format!("{}", v)),
-        }
+        },
     };
 
     // TODO: actual search
@@ -36,6 +36,6 @@ pub async fn search(req: HttpRequest) -> impl Responder {
 fn create_response(found_players: Vec<Player>) -> Model {
     Model {
         result_count: found_players.len(),
-        found_players
+        found_players,
     }
 }
