@@ -17,7 +17,7 @@ use once_cell::sync::OnceCell;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use crate::config::Config;
 use crate::handler::ranking::player::global_ranking_for_player;
-use crate::handler::search::player::search_player;
+use crate::handler::search::player::search;
 use crate::ext::buffered::BufferedRead;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
@@ -121,30 +121,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
-            .service(
-                // legacy=SeichiRanking:/api/ranking
-                web::resource("/ranking/v1/global/periodic")
-                    .route(
-                        web::get()
-                            .to(periodic) // periodic-ranking handler
-                    )
-            )
-            .service(
-                // legacy=SeichiRanking:/api/ranking/player/uuid
-                web::resource("/ranking/v1/player/{uuid}")
-                    .route(
-                        web::get()
-                            .to(global_ranking_for_player) // player-specific handler
-                    )
-            )
-            .service(
-                // legacy=/api/search/player
-                web::resource("/search/v1/player/{uuid}")
-                    .route(
-                        web::get()
-                            .to(search_player)
-                    )
-            )
+            .service(periodic)
+            .service(global_ranking_for_player)
+            .service(search)
     });
     trace!("binding ports");
     http_server
