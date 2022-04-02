@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 #[allow(clippy::unused_async)]
 #[actix_web::get("/seichi/ranking/v1/player/{uuid}")]
-pub async fn global_ranking_for_player(req: HttpRequest, path: Path<Uuid>) -> impl Responder {
+pub async fn global_ranking_for_player(_req: HttpRequest, path: Path<Uuid>) -> impl Responder {
     let player_uuid = path.into_inner();
     // TODO: actual search
 

@@ -13,14 +13,14 @@ struct Model {
 #[actix_web::get("/seichi/search/v1/player")]
 pub async fn search(req: HttpRequest) -> impl Responder {
     let qs = QString::from(req.query_string());
-    let query = match qs.get("q") {
+    let _query = match qs.get("q") {
         None => {
             return HttpResponse::BadRequest().body("no query given");
         }
         Some(a) => a,
     };
 
-    let limit = match qs.get("lim") {
+    let _limit = match qs.get("lim") {
         None => 20,
         Some(a) => match a.parse() {
             Ok(a) => a,

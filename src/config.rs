@@ -1,11 +1,13 @@
 use serde::{Deserialize, Serialize};
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub(crate) database_authorization: DatabaseAuthorizationInfo,
     pub(crate) ports: ServicePorts,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct DatabaseAuthorizationInfo {
     pub(crate) host: String,

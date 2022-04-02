@@ -12,8 +12,8 @@ use crate::ext::buffered::BufferedRead;
 use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search;
 use actix_web::error::JsonPayloadError;
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
-use anyhow::{bail, Context};
+use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
+use anyhow::Context;
 use log::{error, info, trace, warn};
 use once_cell::sync::OnceCell;
 use std::fs::File;
@@ -78,11 +78,8 @@ async fn main() -> std::io::Result<()> {
     // from https://github.com/actix/examples.
     // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
-    match Initialization::setup_logger().context("failed to setup logger") {
-        Ok(_) => {}
-        Err(err) => {
-            eprintln!("failed to initialize logger: {:?}", err);
-        }
+    if let Err(err) = Initialization::setup_logger().context("failed to setup logger") {
+        eprintln!("failed to initialize logger: {err:?}");
     }
 
     Initialization::set_config();
