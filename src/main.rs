@@ -16,7 +16,6 @@ use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
 use anyhow::{bail, Context};
 use log::{error, info, trace, warn};
 use once_cell::sync::OnceCell;
-use rustls::{Certificate, PrivateKey, ServerConfig};
 use std::fs::File;
 use std::io::BufReader;
 
@@ -44,35 +43,6 @@ impl Initialization {
             .chain(fern::log_file("output.log")?)
             .apply()?;
         Ok(())
-    }
-
-    fn load_ssl_keys() -> anyhow::Result<(Vec<Certificate>, PrivateKey)> {
-        use rustls_pemfile::{certs, pkcs8_private_keys};
-        trace!("loading cert.pem");
-        let cert_chain = {
-            let cert_file = &mut File::open("cert.pem")?.buffered();
-            certs(cert_file)
-                .unwrap()
-                .iter()
-                .map(|bytes| Certificate(bytes.clone()))
-                .collect()
-        };
-        trace!("loading key.pem");
-        let mut keys = {
-            let key_file = &mut File::open("key.pem")?.buffered();
-            pkcs8_private_keys(key_file)
-                .unwrap()
-                .iter()
-                .map(|bytes| PrivateKey(bytes.clone()))
-                .collect::<Vec<_>>()
-        };
-
-        if keys.is_empty() {
-            warn!("Could not locate PKCS 8 private keys");
-            bail!("SSL keys were not available")
-        }
-
-        Ok((cert_chain, keys.remove(0)))
     }
 
     fn set_config() {
@@ -115,17 +85,6 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
-    // load SSL keys
-    let session_config = {
-        Initialization::load_ssl_keys().map(|(cert_chain, key_der)| {
-            ServerConfig::builder()
-                .with_safe_defaults()
-                .with_no_client_auth()
-                .with_single_cert(cert_chain, key_der)
-                .unwrap()
-        })
-    };
-
     Initialization::set_config();
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
@@ -139,16 +98,6 @@ async fn main() -> std::io::Result<()> {
             .service(search)
     });
     trace!("binding ports");
-    let http_server = match session_config {
-        Ok(session_config) => http_server.bind_rustls(
-            format!("127.0.0.1:{}", RUNNING_CONFIG.get().unwrap().ports.https.0),
-            session_config,
-        )?,
-        Err(err) => {
-            warn!("SSL connection is not enabled. Reason: {}", err);
-            http_server
-        }
-    };
 
     http_server
         .bind(format!(
