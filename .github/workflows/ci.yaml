@@ -1,6 +1,11 @@
 name: Run test
 
-on: push
+on:
+  push:
+    paths:
+      - '**.rs'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
 
 jobs:
   test:
