@@ -1,8 +1,14 @@
+use actix_web::body::BoxBody;
 use actix_web::http::header::IF_UNMODIFIED_SINCE;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use qstring::QString;
 use std::ops::Deref;
+use std::str::FromStr;
+use strum;
+use strum::EnumString;
 
+#[derive(Debug, PartialEq, EnumString)]
+#[strum(serialize_all = "snake_case")]
 enum RankingType {
     Break,
     Build,
@@ -10,24 +16,13 @@ enum RankingType {
     Vote,
 }
 
+#[allow(dead_code)]
 enum RankingTypeCoercionError {
     InvalidSpecifier,
 }
 
-impl TryFrom<&str> for RankingType {
-    type Error = RankingTypeCoercionError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "break" => Ok(Self::Break),
-            "build" => Ok(Self::Build),
-            "playtime" => Ok(Self::PlayTime),
-            "vote" => Ok(Self::Vote),
-            _ => Err(RankingTypeCoercionError::InvalidSpecifier),
-        }
-    }
-}
-
+#[derive(Debug, PartialEq, EnumString)]
+#[strum(serialize_all = "snake_case")]
 enum RankingPeriod {
     Total,
     Yearly,
@@ -36,42 +31,23 @@ enum RankingPeriod {
     Daily,
 }
 
+#[allow(dead_code)]
 enum RankingPeriodCoercionError {
     InvalidSpecifier,
-}
-
-impl TryFrom<&str> for RankingPeriod {
-    type Error = RankingPeriodCoercionError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "total" => Ok(Self::Total),
-            "yearly" => Ok(Self::Yearly),
-            "monthly" => Ok(Self::Monthly),
-            "weekly" => Ok(Self::Weekly),
-            "daily" => Ok(Self::Daily),
-            _ => Err(RankingPeriodCoercionError::InvalidSpecifier),
-        }
-    }
 }
 
 #[allow(clippy::unused_async)]
 #[actix_web::get("/seichi/ranking/v1/global/periodic")]
 pub async fn periodic(req: HttpRequest) -> impl Responder {
+    periodic_impl(req).unwrap_or_else(|_| HttpResponse::BadRequest().body(""))
+}
+
+fn periodic_impl(req: HttpRequest) -> anyhow::Result<HttpResponse<BoxBody>> {
     let qs: QString = req.query_string().into();
-
-    let _kind: RankingType = match qs.get("type").unwrap_or("break").try_into() {
-        Ok(t) => t,
-        Err(_e) => return HttpResponse::BadRequest().body(""),
-    };
-
-    let _duration: RankingPeriod = match qs.get("duration").unwrap_or("total").try_into() {
-        Ok(t) => t,
-        Err(_e) => return HttpResponse::BadRequest().body(""),
-    };
-
-    req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
+    let _kind = RankingType::from_str(qs.get("type").unwrap_or("break"))?;
+    let _duration = RankingPeriod::from_str(qs.get("duration").unwrap_or("total"))?;
+    Ok(req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
         || HttpResponse::Ok().json(vec![1]),
-        |if_unmodified_since| HttpResponse::NotModified().body(""),
-    )
+        |_| HttpResponse::NotModified().body(""),
+    ))
 }
