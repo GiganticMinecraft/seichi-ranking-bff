@@ -36,7 +36,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: rustfmt, clippy
+          components: rustfmt, clippy, verify-project
       - name: Prepare sccache
         uses: actions/cache@v3
         continue-on-error: false
@@ -47,6 +47,11 @@ jobs:
             ${{ runner.os }}-sccache-
       - name: Start sccache server
         run: sccache --start-server
+      - name: Verify Cargo.lock
+        uses: actions-rs/cargo@v1
+        with:
+          command: verify-project
+          args: -vv --locked
       - name: Build
         uses: actions-rs/cargo@v1
         with:
