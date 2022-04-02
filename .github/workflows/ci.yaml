@@ -1,4 +1,9 @@
-on: [push]
+on:
+  push:
+    paths:
+      - '**.js'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
 
 jobs:
   test:
