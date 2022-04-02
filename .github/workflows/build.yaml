@@ -17,7 +17,7 @@ jobs:
       SCCACHE_DIR: /home/runner/.cache/sccache
       # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install sccache
         env:
           LINK: https://github.com/mozilla/sccache/releases/download
