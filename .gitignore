@@ -2,3 +2,6 @@
 # don't let IDEA files be commited
 .idea
 *.iml
+
+# don't add logs
+*.log
