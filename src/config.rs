@@ -16,7 +16,6 @@ pub struct DatabaseAuthorizationInfo {
 
 #[derive(Deserialize, Debug)]
 pub struct ServicePorts {
-    pub(crate) https: Port,
     pub(crate) http: Port,
 }
 
