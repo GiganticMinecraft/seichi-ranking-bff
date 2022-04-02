@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-      - '**.js'
+      - '**.rs'
       - 'Cargo.lock'
       - 'Cargo.toml'
 
