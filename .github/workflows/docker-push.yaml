@@ -1,8 +1,8 @@
-name: Test Docker Build
-on: 
+name: Build and push container image
+on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - master
 
 env:
   IMAGE: ghcr.io/giganticminecraft/seichirankingbff
