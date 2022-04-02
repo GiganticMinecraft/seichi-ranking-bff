@@ -78,11 +78,8 @@ async fn main() -> std::io::Result<()> {
     // from https://github.com/actix/examples.
     // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
-    match Initialization::setup_logger().context("failed to setup logger") {
-        Ok(_) => {}
-        Err(err) => {
-            eprintln!("failed to initialize logger: {:?}", err);
-        }
+    if let Err(err) = Initialization::setup_logger().context("failed to setup logger") {
+        eprintln!("failed to initialize logger: {err:?}");
     }
 
     Initialization::set_config();
