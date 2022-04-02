@@ -36,7 +36,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: rustfmt, clippy, verify-project
+          components: rustfmt, clippy
       - name: Prepare sccache
         uses: actions/cache@v3
         continue-on-error: false
