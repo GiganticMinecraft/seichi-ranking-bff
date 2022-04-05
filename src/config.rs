@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
-pub(crate) trait FromStringKeyValue : Sized {
+pub(crate) trait FromStringKeyValue: Sized {
     fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self>;
 }
 
@@ -9,7 +9,7 @@ pub(crate) trait FromEnv: Sized {
     fn from_env() -> Result<Self>;
 }
 
-impl <T: FromStringKeyValue> FromEnv for T {
+impl<T: FromStringKeyValue> FromEnv for T {
     fn from_env() -> Result<Self> {
         Self::from_iter(&mut std::env::vars())
     }
@@ -23,7 +23,7 @@ pub struct Config {
 }
 
 impl FromStringKeyValue for Config {
-    fn from_iter(iter: &mut impl Iterator<Item=(String, String)>) -> Result<Self> {
+    fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter)?,
             ports: ServicePorts::from_iter(iter)?,
@@ -41,7 +41,7 @@ pub struct DatabaseAuthorizationInfo {
 }
 
 impl FromStringKeyValue for DatabaseAuthorizationInfo {
-    fn from_iter(iter: &mut impl Iterator<Item=(String, String)>) -> Result<Self> {
+    fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(envy::prefixed("DB").from_iter(iter)?)
     }
 }
@@ -52,7 +52,7 @@ pub struct ServicePorts {
 }
 
 impl FromStringKeyValue for ServicePorts {
-    fn from_iter(iter: &mut impl Iterator<Item=(String, String)>) -> Result<Self> {
+    fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(envy::prefixed("PORT").from_iter(iter)?)
     }
 }

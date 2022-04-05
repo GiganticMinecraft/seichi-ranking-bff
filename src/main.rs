@@ -11,7 +11,7 @@ use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search;
 use actix_web::error::JsonPayloadError;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use log::{error, info, trace, warn};
 use once_cell::sync::OnceCell;
 use thiserror::Error;
@@ -23,7 +23,7 @@ enum ConfigError {
     #[error("serialized config is written in invalid format")]
     InvalidFormat,
     #[error("config cell is already set")]
-    AlreadySet
+    AlreadySet,
 }
 
 struct Initialization;
