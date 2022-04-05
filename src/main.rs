@@ -3,21 +3,17 @@
 #![allow(clippy::cargo_common_metadata)]
 
 mod config;
-mod ext;
 mod handler;
 mod model;
 
-use crate::config::Config;
-use crate::ext::buffered::BufferedRead;
+use crate::config::{Config, FromEnv};
 use crate::handler::ranking::player::global_ranking_for_player;
 use crate::handler::search::player::search;
 use actix_web::error::JsonPayloadError;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
-use anyhow::Context;
+use anyhow::{Result, Context};
 use log::{error, info, trace, warn};
 use once_cell::sync::OnceCell;
-use std::fs::File;
-use std::io::BufReader;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
@@ -45,12 +41,10 @@ impl Initialization {
         Ok(())
     }
 
-    fn set_config() {
+    fn set_config() -> Result<(), ()> {
         trace!("Reading config...");
-        let running_config = File::open("data/config.json").unwrap().buffered();
         RUNNING_CONFIG
-            .set(serde_json::from_reader(BufReader::new(running_config)).unwrap())
-            .expect("set failed");
+            .set(Config::from_env().map_err(|_| ())?).map_err(|_| ())
     }
 }
 
@@ -73,7 +67,7 @@ fn json_error_handler(
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     // This function contains code snippet which is licensed with Apache License 2.0
     // from https://github.com/actix/examples.
     // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
@@ -82,7 +76,7 @@ async fn main() -> std::io::Result<()> {
         eprintln!("failed to initialize logger: {err:?}");
     }
 
-    Initialization::set_config();
+    Initialization::set_config()?;
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
         use crate::handler::ranking::periodic::periodic;
