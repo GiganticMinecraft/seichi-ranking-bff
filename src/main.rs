@@ -14,8 +14,17 @@ use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
 use anyhow::{Result, Context};
 use log::{error, info, trace, warn};
 use once_cell::sync::OnceCell;
+use thiserror::Error;
 
 static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
+
+#[derive(Error, Debug)]
+enum ConfigError {
+    #[error("serialized config is written in invalid format")]
+    InvalidFormat,
+    #[error("config cell is already set")]
+    AlreadySet
+}
 
 struct Initialization;
 
@@ -41,10 +50,11 @@ impl Initialization {
         Ok(())
     }
 
-    fn set_config() -> Result<(), ()> {
+    fn set_config() -> Result<(), ConfigError> {
         trace!("Reading config...");
         RUNNING_CONFIG
-            .set(Config::from_env().map_err(|_| ())?).map_err(|_| ())
+            .set(Config::from_env().map_err(|_| ConfigError::InvalidFormat)?)
+            .map_err(|_| ConfigError::AlreadySet)
     }
 }
 
