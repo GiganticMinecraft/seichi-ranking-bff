@@ -1,11 +1,11 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-pub(crate) trait FromStringKeyValue: Sized {
+pub trait FromStringKeyValue: Sized {
     fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self>;
 }
 
-pub(crate) trait FromEnv: Sized {
+pub trait FromEnv: Sized {
     fn from_env() -> Result<Self>;
 }
 
