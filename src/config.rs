@@ -19,14 +19,15 @@ impl<T: FromStringKeyValue> FromEnv for T {
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub(crate) database_authorization: DatabaseAuthorizationInfo,
-    pub(crate) ports: ServicePorts,
+    #[serde(rename = "http")]
+    pub(crate) http_config: HttpConfig,
 }
 
 impl FromStringKeyValue for Config {
     fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter)?,
-            ports: ServicePorts::from_iter(iter)?,
+            http_config: HttpConfig::from_iter(iter)?,
         })
     }
 }
@@ -47,13 +48,13 @@ impl FromStringKeyValue for DatabaseAuthorizationInfo {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct ServicePorts {
-    pub(crate) http: Port,
+pub struct HttpConfig {
+    port: Port,
 }
 
-impl FromStringKeyValue for ServicePorts {
+impl FromStringKeyValue for HttpConfig {
     fn from_iter(iter: &mut impl Iterator<Item = (String, String)>) -> Result<Self> {
-        Ok(envy::prefixed("PORT").from_iter(iter)?)
+        Ok(envy::prefixed("HTTP").from_iter(iter)?)
     }
 }
 
