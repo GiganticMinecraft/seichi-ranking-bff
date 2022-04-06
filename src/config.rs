@@ -49,7 +49,7 @@ impl FromStringKeyValue for DatabaseAuthorizationInfo {
 
 #[derive(Deserialize, Debug)]
 pub struct HttpConfig {
-    port: Port,
+    pub port: Port,
 }
 
 impl FromStringKeyValue for HttpConfig {

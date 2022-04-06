@@ -103,7 +103,7 @@ async fn main() -> Result<()> {
     http_server
         .bind(format!(
             "127.0.0.1:{}",
-            RUNNING_CONFIG.get().unwrap().ports.http.0
+            RUNNING_CONFIG.get().unwrap().http_config.port.0
         ))?
         .run()
         .await?;
