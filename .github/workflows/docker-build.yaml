@@ -2,7 +2,6 @@ name: Docker Build (and Push if on master)
 on: 
   push:
     paths-ignore:
-      - '.github/**'
       - '**.md'
 
 env:
