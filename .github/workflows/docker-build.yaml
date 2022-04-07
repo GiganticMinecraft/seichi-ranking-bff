@@ -8,7 +8,7 @@ env:
   IMAGE: ghcr.io/giganticminecraft/seichirankingbff
 
 jobs:
-  test-container-image:
+  build-container-image:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
