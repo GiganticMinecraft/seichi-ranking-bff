@@ -1,4 +1,4 @@
-name: Test Application Code and Build (and Release if on master) Docker Image
+name: CI
 on: 
   push:
     paths-ignore:
@@ -9,7 +9,7 @@ env:
 
 jobs:
   ci:
-    name: Lint and test
+    name: Lint and test application
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -43,6 +43,7 @@ jobs:
           args: --all-features
 
   build-image:
+    name: Build docker image (and publish on master)
     needs: [ci]
     runs-on: ubuntu-20.04
     steps:
