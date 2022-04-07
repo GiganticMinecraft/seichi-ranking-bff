@@ -5,7 +5,6 @@
 mod config;
 mod handler;
 mod model;
-mod test;
 
 use crate::config::{Config, FromEnv};
 use crate::handler::ranking::player::global_ranking_for_player;
