@@ -11,29 +11,25 @@ use seichi_ranking_bff::{
     handlers::{ranking::global_ranking_for_player, ranking::periodic},
 };
 
-struct Initialization;
+fn setup_logger() -> Result<(), fern::InitError> {
+    use fern::colors::ColoredLevelConfig;
+    let colors = ColoredLevelConfig::new();
 
-impl Initialization {
-    fn setup_logger() -> Result<(), fern::InitError> {
-        use fern::colors::ColoredLevelConfig;
-        let colors = ColoredLevelConfig::new();
-
-        fern::Dispatch::new()
-            .format(move |out, message, record| {
-                out.finish(format_args!(
-                    "{}[{}][{}] {}",
-                    chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
-                    record.target(),
-                    colors.color(record.level()),
-                    message
-                ));
-            })
-            .level(log::LevelFilter::Trace)
-            .chain(std::io::stdout())
-            .chain(fern::log_file("output.log")?)
-            .apply()?;
-        Ok(())
-    }
+    fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                record.target(),
+                colors.color(record.level()),
+                message
+            ));
+        })
+        .level(log::LevelFilter::Trace)
+        .chain(std::io::stdout())
+        .chain(fern::log_file("output.log")?)
+        .apply()?;
+    Ok(())
 }
 
 fn json_error_handler(
@@ -60,7 +56,7 @@ async fn main() -> Result<()> {
     // from https://github.com/actix/examples.
     // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
-    if let Err(err) = Initialization::setup_logger().context("failed to setup logger") {
+    if let Err(err) = setup_logger().context("failed to setup logger") {
         eprintln!("failed to initialize logger: {err:?}");
     }
 
