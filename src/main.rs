@@ -14,17 +14,12 @@ use actix_web::error::JsonPayloadError;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
 use anyhow::{Context, Result};
 use log::{error, info, trace, warn};
-use once_cell::sync::OnceCell;
 use thiserror::Error;
-
-static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 
 #[derive(Error, Debug)]
 enum ConfigError {
     #[error("serialized config is written in invalid format")]
     InvalidFormat(#[from] envy::Error),
-    #[error("config cell is already set")]
-    AlreadySet,
 }
 
 struct Initialization;
@@ -51,12 +46,9 @@ impl Initialization {
         Ok(())
     }
 
-    fn set_config() -> Result<(), ConfigError> {
+    fn read_config() -> Result<Config, ConfigError> {
         trace!("Reading config...");
-        match Config::from_env().map_err(ConfigError::InvalidFormat) {
-            Ok(c) => RUNNING_CONFIG.set(c).map_err(|_| ConfigError::AlreadySet),
-            Err(e) => Err(e),
-        }
+        Config::from_env().map_err(ConfigError::InvalidFormat)
     }
 }
 
@@ -88,7 +80,7 @@ async fn main() -> Result<()> {
         eprintln!("failed to initialize logger: {err:?}");
     }
 
-    Initialization::set_config()?;
+    let config = Initialization::read_config()?;
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
         use crate::handler::ranking::periodic::periodic;
@@ -105,7 +97,7 @@ async fn main() -> Result<()> {
     http_server
         .bind(format!(
             "127.0.0.1:{}",
-            RUNNING_CONFIG.get().unwrap().http_config.port.0
+            config.http_config.port.0
         ))?
         .run()
         .await?;
