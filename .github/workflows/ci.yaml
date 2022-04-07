@@ -8,7 +8,7 @@ env:
   IMAGE: ghcr.io/giganticminecraft/seichirankingbff
 
 jobs:
-  ci:
+  lint-and-test:
     name: Lint and test application
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +44,7 @@ jobs:
 
   build-image:
     name: Build docker image (and publish on master)
-    needs: [ci]
+    needs: [lint-and-test]
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
