@@ -21,7 +21,6 @@ impl<T: FromStringKeyValue> FromEnv for T {
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub(crate) database_authorization: DatabaseAuthorizationInfo,
-    #[serde(rename = "http")]
     pub(crate) http_config: HttpConfig,
 }
 
