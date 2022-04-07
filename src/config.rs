@@ -1,6 +1,6 @@
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use envy::Error;
+use serde::{Deserialize, Serialize};
 
 pub trait FromStringKeyValue: Sized {
     fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;

@@ -54,10 +54,8 @@ impl Initialization {
     fn set_config() -> Result<(), ConfigError> {
         trace!("Reading config...");
         match Config::from_env().map_err(ConfigError::InvalidFormat) {
-            Ok(c) => {
-                RUNNING_CONFIG.set(c).map_err(|_| ConfigError::AlreadySet)
-            }
-            Err(e) => Err(e)
+            Ok(c) => RUNNING_CONFIG.set(c).map_err(|_| ConfigError::AlreadySet),
+            Err(e) => Err(e),
         }
     }
 }
