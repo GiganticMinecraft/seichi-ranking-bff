@@ -17,8 +17,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 enum ConfigError {
-    #[error("serialized config is written in invalid format")]
-    InvalidFormat(#[from] envy::Error),
+    #[error("environment variable was missing")]
+    EnvVarMissing(#[from] envy::Error),
 }
 
 struct Initialization;
@@ -47,7 +47,7 @@ impl Initialization {
 
     fn read_config() -> Result<Config, ConfigError> {
         trace!("Reading config...");
-        Config::from_env().map_err(ConfigError::InvalidFormat)
+        Config::from_env().map_err(ConfigError::EnvVarMissing)
     }
 }
 
