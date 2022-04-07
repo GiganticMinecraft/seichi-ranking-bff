@@ -52,6 +52,7 @@ jobs:
           args: --all-features
 
   build-image:
+    needs: [ci]
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
