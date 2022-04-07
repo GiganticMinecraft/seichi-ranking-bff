@@ -2,7 +2,7 @@ use anyhow::Result;
 use envy::Error;
 use serde::{Deserialize, Serialize};
 
-pub trait FromStringKeyValue: Sized {
+pub trait FromEnvLikeKeyValuePairs: Sized {
     fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;
 }
 
@@ -10,7 +10,7 @@ pub trait FromEnv: Sized {
     fn from_env() -> Result<Self, Error>;
 }
 
-impl<T: FromStringKeyValue> FromEnv for T {
+impl<T: FromEnvLikeKeyValuePairs> FromEnv for T {
     fn from_env() -> Result<Self, Error> {
         // std::env::Vars is !Clone
         Self::from_iter(std::env::vars().collect::<Vec<_>>().into_iter())
@@ -24,7 +24,7 @@ pub struct Config {
     pub(crate) http_config: HttpConfig,
 }
 
-impl FromStringKeyValue for Config {
+impl FromEnvLikeKeyValuePairs for Config {
     fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter.clone())?,
@@ -42,7 +42,7 @@ pub struct DatabaseAuthorizationInfo {
     pub(crate) password: String,
 }
 
-impl FromStringKeyValue for DatabaseAuthorizationInfo {
+impl FromEnvLikeKeyValuePairs for DatabaseAuthorizationInfo {
     fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self, Error> {
         envy::prefixed("DB_").from_iter(iter)
     }
@@ -53,7 +53,7 @@ pub struct HttpConfig {
     pub port: Port,
 }
 
-impl FromStringKeyValue for HttpConfig {
+impl FromEnvLikeKeyValuePairs for HttpConfig {
     fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self, Error> {
         envy::prefixed("HTTP_").from_iter(iter)
     }
@@ -64,7 +64,7 @@ pub struct Port(pub(crate) u16);
 
 #[cfg(test)]
 mod test {
-    use crate::config::FromStringKeyValue;
+    use crate::config::FromEnvLikeKeyValuePairs;
     use crate::Config;
 
     #[test]
