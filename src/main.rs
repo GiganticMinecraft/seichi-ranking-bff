@@ -94,10 +94,7 @@ async fn main() -> Result<()> {
     trace!("binding ports");
 
     http_server
-        .bind(format!(
-            "127.0.0.1:{}",
-            config.http_config.port.0
-        ))?
+        .bind(format!("127.0.0.1:{}", config.http_config.port.0))?
         .run()
         .await?;
 
