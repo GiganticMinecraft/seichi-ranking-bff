@@ -11,6 +11,6 @@ fn read_config_from_iterator() {
         ("DB_PASSWORD".to_string(), "$tr0ngpAssw0rd".to_string()),
     ];
 
-    Config::from_iter(&mut setting.into_iter()).unwrap();
+    Config::from_iter(setting.into_iter()).unwrap();
 
 }
