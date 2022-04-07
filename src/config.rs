@@ -48,6 +48,7 @@ impl FromEnvLikeKeyValuePairs for DatabaseAuthorizationInfo {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Deserialize, Debug)]
 pub struct HttpConfig {
     pub port: Port,
