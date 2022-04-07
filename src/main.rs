@@ -13,13 +13,6 @@ use actix_web::error::JsonPayloadError;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
 use anyhow::{Context, Result};
 use log::{error, info, trace, warn};
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-enum ConfigError {
-    #[error("environment variable was missing")]
-    EnvVarMissing(#[from] envy::Error),
-}
 
 struct Initialization;
 
@@ -43,11 +36,6 @@ impl Initialization {
             .chain(fern::log_file("output.log")?)
             .apply()?;
         Ok(())
-    }
-
-    fn read_config() -> Result<Config, ConfigError> {
-        trace!("Reading config...");
-        Config::from_env().map_err(ConfigError::EnvVarMissing)
     }
 }
 
@@ -79,7 +67,9 @@ async fn main() -> Result<()> {
         eprintln!("failed to initialize logger: {err:?}");
     }
 
-    let config = Initialization::read_config()?;
+    trace!("Reading config...");
+    let config = Config::from_env()?;
+
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
         use crate::handler::ranking::periodic::periodic;
