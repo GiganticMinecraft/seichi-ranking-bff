@@ -2,12 +2,12 @@ use anyhow::Result;
 use envy::Error;
 use serde::{Deserialize, Serialize};
 
-trait FromEnvLikeKeyValuePairs: Sized {
-    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;
-}
-
 pub trait FromEnv: Sized {
     fn from_env() -> Result<Self, Error>;
+}
+
+trait FromEnvLikeKeyValuePairs: Sized {
+    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;
 }
 
 impl<T: FromEnvLikeKeyValuePairs> FromEnv for T {
