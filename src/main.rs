@@ -75,8 +75,8 @@ async fn main() -> Result<()> {
             .service(periodic)
             .service(global_ranking_for_player)
     });
-    trace!("binding ports");
 
+    trace!("binding ports");
     http_server
         .bind(format!(
             "{}:{}",
