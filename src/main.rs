@@ -2,17 +2,14 @@
 #![warn(clippy::nursery, clippy::pedantic)]
 #![allow(clippy::cargo_common_metadata)]
 
-mod config;
-mod handler;
-mod model;
-
-use crate::config::{Config, FromEnv};
-use crate::handler::ranking::player::global_ranking_for_player;
-use crate::handler::search::player::search;
 use actix_web::error::JsonPayloadError;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
 use anyhow::{Context, Result};
 use log::{error, info, trace, warn};
+use seichi_ranking_bff::{
+    config::{Config, FromEnv},
+    handlers::{ranking::global_ranking_for_player, ranking::periodic},
+};
 
 struct Initialization;
 
@@ -72,14 +69,11 @@ async fn main() -> Result<()> {
 
     trace!("building HttpServer");
     let http_server = HttpServer::new(|| {
-        use crate::handler::ranking::periodic::periodic;
-
         App::new()
             .wrap(actix_web::middleware::Logger::default())
             .app_data(json_error_handler)
             .service(periodic)
             .service(global_ranking_for_player)
-            .service(search)
     });
     trace!("binding ports");
 

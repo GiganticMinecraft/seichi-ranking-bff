@@ -1,11 +1,14 @@
 use actix_web::body::BoxBody;
 use actix_web::http::header::IF_UNMODIFIED_SINCE;
+use actix_web::web::Path;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use qstring::QString;
+use serde_json::json;
 use std::ops::Deref;
 use std::str::FromStr;
 use strum;
 use strum::EnumString;
+use uuid::Uuid;
 
 #[derive(Debug, PartialEq, EnumString)]
 #[strum(serialize_all = "snake_case")]
@@ -38,7 +41,7 @@ enum RankingPeriodCoercionError {
 
 #[allow(clippy::unused_async)]
 #[allow(clippy::future_not_send)]
-#[actix_web::get("/seichi/ranking/v1/global/periodic")]
+#[actix_web::get("/api/v1/ranking")]
 pub async fn periodic(req: HttpRequest) -> impl Responder {
     periodic_impl(&req).unwrap_or_else(|_| HttpResponse::BadRequest().body(""))
 }
@@ -51,4 +54,17 @@ fn periodic_impl(req: &HttpRequest) -> anyhow::Result<HttpResponse<BoxBody>> {
         || HttpResponse::Ok().json(vec![1]),
         |_| HttpResponse::NotModified().body(""),
     ))
+}
+
+#[allow(clippy::unused_async)]
+#[allow(clippy::future_not_send)]
+#[actix_web::get("/api/v1/player-ranks/{uuid}")]
+pub async fn global_ranking_for_player(_req: HttpRequest, path: Path<Uuid>) -> impl Responder {
+    let player_uuid = path.into_inner();
+    // TODO: actual search
+
+    HttpResponse::Ok().json(json!({
+        "name": "$THIS_IS_DUMMY",
+        "uuid": player_uuid
+    }))
 }
