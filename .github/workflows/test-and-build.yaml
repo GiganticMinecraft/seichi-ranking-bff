@@ -1,4 +1,4 @@
-name: Docker Build (and Push if on master)
+name: Test Application Code and Build (and Release if on master) Docker Image
 on: 
   push:
     paths-ignore:
@@ -8,7 +8,50 @@ env:
   IMAGE: ghcr.io/giganticminecraft/seichirankingbff
 
 jobs:
-  build-container-image:
+  ci:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Fetch actions cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target          
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      # GitHubのUIにエラー/警告を表示してくれるので actions-rs/cargo を利用している
+
+      - name: Cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+
+      - name: Cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
+
+  build-image:
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
