@@ -29,17 +29,14 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: create tag
-        run: |
-          SHA="${{ github.sha }}"
-          TAG="${IMAGE}:$(TZ=UTC+9 date '+%Y%m')-${SHA:0:7}"
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            LATEST="${IMAGE}:latest"
-            echo "TAGS=$TAG,$LATEST" >> "$GITHUB_ENV"
-          else
-            echo "TAGS=$TAG" >> "$GITHUB_ENV"
-          fi
-          echo TAG "$TAG"
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ steps.prepare_image_id.outputs.lowercase_id }}
+          tags: |
+            type=sha,prefix=sha-,suffix=,format=short
+            type=schedule,pattern={{date 'YYYYMMDD'}}
 
       - name: Build (and push if on master)
         id: docker_build
@@ -49,6 +46,7 @@ jobs:
           file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: ${{ github.ref == "refs/heads/main" }}
-          tags: ${{ env.TAGS }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
