@@ -29,7 +29,7 @@ impl FromStringKeyValue for Config {
     fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter.clone())?,
-            http_config: HttpConfig::from_iter(iter.clone())?,
+            http_config: HttpConfig::from_iter(iter)?,
         })
     }
 }
