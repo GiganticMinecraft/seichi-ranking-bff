@@ -1,3 +1,4 @@
+use crate::model::{RankingPeriod, RankingType};
 use actix_web::body::BoxBody;
 use actix_web::http::header::IF_UNMODIFIED_SINCE;
 use actix_web::web::Path;
@@ -6,32 +7,11 @@ use qstring::QString;
 use serde_json::json;
 use std::ops::Deref;
 use std::str::FromStr;
-use strum;
-use strum::EnumString;
 use uuid::Uuid;
-
-#[derive(Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "snake_case")]
-enum RankingType {
-    Break,
-    Build,
-    PlayTime,
-    Vote,
-}
 
 #[allow(dead_code)]
 enum RankingTypeCoercionError {
     InvalidSpecifier,
-}
-
-#[derive(Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "snake_case")]
-enum RankingPeriod {
-    Total,
-    Yearly,
-    Monthly,
-    Weekly,
-    Daily,
 }
 
 #[allow(dead_code)]
