@@ -1,4 +1,4 @@
-use crate::model::{RankingPeriod, RankingType};
+use crate::model::{RankingAggregationTimeRange, RankingType};
 use actix_web::body::BoxBody;
 use actix_web::http::header::IF_UNMODIFIED_SINCE;
 use actix_web::web::Path;
@@ -29,7 +29,7 @@ pub async fn periodic(req: HttpRequest) -> impl Responder {
 fn periodic_impl(req: &HttpRequest) -> anyhow::Result<HttpResponse<BoxBody>> {
     let qs: QString = req.query_string().into();
     let _kind = RankingType::from_str(qs.get("type").unwrap_or("break"))?;
-    let _duration = RankingPeriod::from_str(qs.get("duration").unwrap_or("total"))?;
+    let _duration = RankingAggregationTimeRange::from_str(qs.get("duration").unwrap_or("total"))?;
     Ok(req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
         || HttpResponse::Ok().json(vec![1]),
         |_| HttpResponse::NotModified().body(""),

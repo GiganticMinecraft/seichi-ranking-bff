@@ -20,10 +20,10 @@ pub enum RankingType {
 
 #[derive(Debug, PartialEq, EnumString)]
 #[strum(serialize_all = "snake_case")]
-pub enum RankingPeriod {
+pub enum RankingAggregationTimeRange {
     All,
-    Yearly,
-    Monthly,
-    Weekly,
-    Daily,
+    LastOneYear,
+    LastOneMonth,
+    LastOneWeek,
+    LastOneDay,
 }
