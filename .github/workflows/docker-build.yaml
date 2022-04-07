@@ -39,7 +39,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ steps.prepare_image_id.outputs.lowercase_id }}
+          images: ${{ env.IMAGE }}
           tags: |
             type=sha,prefix=sha-,suffix=,format=short
             type=schedule,pattern={{date 'YYYYMMDD'}}
