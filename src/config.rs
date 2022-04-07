@@ -1,16 +1,17 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use envy::Error;
 
 pub trait FromStringKeyValue: Sized {
-    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self>;
+    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;
 }
 
 pub trait FromEnv: Sized {
-    fn from_env() -> Result<Self>;
+    fn from_env() -> Result<Self, Error>;
 }
 
 impl<T: FromStringKeyValue> FromEnv for T {
-    fn from_env() -> Result<Self> {
+    fn from_env() -> Result<Self, Error> {
         // std::env::Vars is !Clone
         Self::from_iter(std::env::vars().collect::<Vec<_>>().into_iter())
     }
@@ -25,7 +26,7 @@ pub struct Config {
 }
 
 impl FromStringKeyValue for Config {
-    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self> {
+    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter.clone())?,
             http_config: HttpConfig::from_iter(iter.clone())?,
@@ -43,8 +44,8 @@ pub struct DatabaseAuthorizationInfo {
 }
 
 impl FromStringKeyValue for DatabaseAuthorizationInfo {
-    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self> {
-        Ok(envy::prefixed("DB_").from_iter(iter)?)
+    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self, Error> {
+        envy::prefixed("DB_").from_iter(iter)
     }
 }
 
@@ -54,8 +55,8 @@ pub struct HttpConfig {
 }
 
 impl FromStringKeyValue for HttpConfig {
-    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self> {
-        Ok(envy::prefixed("HTTP_").from_iter(iter)?)
+    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self, Error> {
+        envy::prefixed("HTTP_").from_iter(iter)
     }
 }
 

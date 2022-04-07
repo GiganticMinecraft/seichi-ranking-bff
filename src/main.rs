@@ -22,7 +22,7 @@ static RUNNING_CONFIG: OnceCell<Config> = OnceCell::new();
 #[derive(Error, Debug)]
 enum ConfigError {
     #[error("serialized config is written in invalid format")]
-    InvalidFormat,
+    InvalidFormat(#[from] envy::Error),
     #[error("config cell is already set")]
     AlreadySet,
 }
@@ -53,9 +53,12 @@ impl Initialization {
 
     fn set_config() -> Result<(), ConfigError> {
         trace!("Reading config...");
-        RUNNING_CONFIG
-            .set(Config::from_env().map_err(|_| ConfigError::InvalidFormat)?)
-            .map_err(|_| ConfigError::AlreadySet)
+        match Config::from_env().map_err(ConfigError::InvalidFormat) {
+            Ok(c) => {
+                RUNNING_CONFIG.set(c).map_err(|_| ConfigError::AlreadySet)
+            }
+            Err(e) => Err(e)
+        }
     }
 }
 
