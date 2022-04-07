@@ -2,7 +2,7 @@ use anyhow::Result;
 use envy::Error;
 use serde::{Deserialize, Serialize};
 
-pub trait FromEnvLikeKeyValuePairs: Sized {
+trait FromEnvLikeKeyValuePairs: Sized {
     fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self, Error>;
 }
 
