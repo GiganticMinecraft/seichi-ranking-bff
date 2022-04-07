@@ -51,6 +51,7 @@ impl FromEnvLikeKeyValuePairs for DatabaseAuthorizationInfo {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Deserialize, Debug)]
 pub struct HttpConfig {
+    pub host: String,
     pub port: Port,
 }
 
@@ -72,6 +73,7 @@ mod test {
     fn read_config_from_iterator() {
         let setting = [
             ("HTTP_PORT".to_string(), "12345".to_string()),
+            ("HTTP_HOST".to_string(), "127.0.0.1".to_string()),
             ("DB_HOST".to_string(), "example.com".to_string()),
             ("DB_PORT".to_string(), "3307".to_string()),
             ("DB_USER".to_string(), "bff".to_string()),
