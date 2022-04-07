@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 pub trait FromStringKeyValue: Sized {
-    fn from_iter(iter: impl Iterator<Item=(String, String)> + Clone) -> Result<Self>;
+    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self>;
 }
 
 pub trait FromEnv: Sized {
@@ -25,7 +25,7 @@ pub struct Config {
 }
 
 impl FromStringKeyValue for Config {
-    fn from_iter(iter: impl Iterator<Item=(String, String)> + Clone) -> Result<Self> {
+    fn from_iter(iter: impl Iterator<Item = (String, String)> + Clone) -> Result<Self> {
         Ok(Self {
             database_authorization: DatabaseAuthorizationInfo::from_iter(iter.clone())?,
             http_config: HttpConfig::from_iter(iter.clone())?,
@@ -43,7 +43,7 @@ pub struct DatabaseAuthorizationInfo {
 }
 
 impl FromStringKeyValue for DatabaseAuthorizationInfo {
-    fn from_iter(iter: impl Iterator<Item=(String, String)>) -> Result<Self> {
+    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(envy::prefixed("DB_").from_iter(iter)?)
     }
 }
@@ -54,7 +54,7 @@ pub struct HttpConfig {
 }
 
 impl FromStringKeyValue for HttpConfig {
-    fn from_iter(iter: impl Iterator<Item=(String, String)>) -> Result<Self> {
+    fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self> {
         Ok(envy::prefixed("HTTP_").from_iter(iter)?)
     }
 }

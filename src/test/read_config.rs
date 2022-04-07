@@ -1,5 +1,5 @@
-use crate::Config;
 use crate::config::FromStringKeyValue;
+use crate::Config;
 
 #[test]
 fn read_config_from_iterator() {
@@ -12,5 +12,4 @@ fn read_config_from_iterator() {
     ];
 
     Config::from_iter(setting.into_iter()).unwrap();
-
 }
