@@ -2,10 +2,9 @@
 #![warn(clippy::nursery, clippy::pedantic)]
 #![allow(clippy::cargo_common_metadata)]
 
-use actix_web::error::JsonPayloadError;
-use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
+use actix_web::{App, HttpServer};
 use anyhow::{Context, Result};
-use log::{error, info, trace, warn};
+use log::{info, trace, warn};
 use seichi_ranking_bff::{
     config::{Config, FromEnv},
     handlers::{ranking::global_ranking_for_player, ranking::periodic},
@@ -32,29 +31,8 @@ fn setup_logger() -> Result<(), fern::InitError> {
     Ok(())
 }
 
-fn json_error_handler(
-    err: actix_web::error::JsonPayloadError,
-    req: &HttpRequest,
-) -> actix_web::error::Error {
-    use actix_web::error::InternalError;
-    let detail = err.to_string();
-    error!("error during handling JSON, in {:?}: {:?}", req, err);
-
-    let resp = match &err {
-        JsonPayloadError::ContentType => HttpResponse::UnsupportedMediaType().body(detail),
-        JsonPayloadError::Deserialize(json_err) if json_err.is_data() => {
-            HttpResponse::UnprocessableEntity().body(detail)
-        }
-        _ => HttpResponse::BadRequest().body(detail),
-    };
-    InternalError::from_response(err, resp).into()
-}
-
 #[actix_web::main]
 async fn main() -> Result<()> {
-    // This function contains code snippet which is licensed with Apache License 2.0
-    // from https://github.com/actix/examples.
-    // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
     if let Err(err) = setup_logger().context("failed to setup logger") {
         eprintln!("failed to initialize logger: {err:?}");
@@ -67,7 +45,6 @@ async fn main() -> Result<()> {
     let http_server = HttpServer::new(|| {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
-            .app_data(json_error_handler)
             .service(periodic)
             .service(global_ranking_for_player)
     });
