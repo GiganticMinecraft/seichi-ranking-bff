@@ -5,6 +5,7 @@ use crate::model::{
 use std::borrow::Borrow;
 use std::sync::RwLock;
 
+#[derive(Default)]
 pub struct LockedRankingsForTimeRanges<Attribution: AggregatedPlayerAttribution> {
     all: RwLock<Ranking<Attribution>>,
     last_one_year: RwLock<Ranking<Attribution>>,
@@ -28,9 +29,10 @@ impl<Attribution: AggregatedPlayerAttribution> LockedRankingsForTimeRanges<Attri
     }
 }
 
-pub struct AppState<'a> {
-    pub break_count_rankings: &'a LockedRankingsForTimeRanges<BreakCount>,
-    pub build_count_rankings: &'a LockedRankingsForTimeRanges<BuildCount>,
-    pub play_ticks_rankings: &'a LockedRankingsForTimeRanges<PlayTicks>,
-    pub vote_count_rankings: &'a LockedRankingsForTimeRanges<VoteCount>,
+#[derive(Default)]
+pub struct AppState {
+    pub break_count_rankings: LockedRankingsForTimeRanges<BreakCount>,
+    pub build_count_rankings: LockedRankingsForTimeRanges<BuildCount>,
+    pub play_ticks_rankings: LockedRankingsForTimeRanges<PlayTicks>,
+    pub vote_count_rankings: LockedRankingsForTimeRanges<VoteCount>,
 }

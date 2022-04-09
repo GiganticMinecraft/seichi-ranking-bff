@@ -8,7 +8,7 @@ use uuid::Uuid;
 #[allow(clippy::unused_async)]
 #[allow(clippy::future_not_send)]
 #[actix_web::get("/api/v1/ranking")]
-pub async fn ranking(req: HttpRequest, data: web::Data<AppState<'static>>) -> impl Responder {
+pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> impl Responder {
     let qs: QString = req.query_string().into();
 
     let duration_specifier = qs.get("duration").unwrap_or("all");
@@ -36,7 +36,7 @@ pub async fn ranking(req: HttpRequest, data: web::Data<AppState<'static>>) -> im
 pub async fn player_rank(
     req: HttpRequest,
     path: Path<Uuid>,
-    data: web::Data<AppState<'static>>,
+    data: web::Data<&'static AppState>,
 ) -> impl Responder {
     let qs: QString = req.query_string().into();
 
