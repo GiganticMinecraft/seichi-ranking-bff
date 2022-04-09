@@ -1,50 +1,47 @@
-use crate::model::{RankingAggregationTimeRange, RankingType};
-use actix_web::body::BoxBody;
-use actix_web::http::header::IF_UNMODIFIED_SINCE;
+use crate::app_state::AppState;
+use crate::model::AggregationTimeRange;
 use actix_web::web::Path;
-use actix_web::{HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use qstring::QString;
-use serde_json::json;
-use std::ops::Deref;
-use std::str::FromStr;
 use uuid::Uuid;
-
-#[allow(dead_code)]
-enum RankingTypeCoercionError {
-    InvalidSpecifier,
-}
-
-#[allow(dead_code)]
-enum RankingPeriodCoercionError {
-    InvalidSpecifier,
-}
 
 #[allow(clippy::unused_async)]
 #[allow(clippy::future_not_send)]
 #[actix_web::get("/api/v1/ranking")]
-pub async fn periodic(req: HttpRequest) -> impl Responder {
-    periodic_impl(&req).unwrap_or_else(|_| HttpResponse::BadRequest().body(""))
-}
-
-fn periodic_impl(req: &HttpRequest) -> anyhow::Result<HttpResponse<BoxBody>> {
+pub async fn ranking(req: HttpRequest, data: web::Data<AppState<'static>>) -> impl Responder {
     let qs: QString = req.query_string().into();
-    let _kind = RankingType::from_str(qs.get("type").unwrap_or("break"))?;
-    let _duration = RankingAggregationTimeRange::from_str(qs.get("duration").unwrap_or("total"))?;
-    Ok(req.headers().deref().get(IF_UNMODIFIED_SINCE).map_or_else(
-        || HttpResponse::Ok().json(vec![1]),
-        |_| HttpResponse::NotModified().body(""),
-    ))
+
+    let duration_specifier = qs.get("duration").unwrap_or("all");
+    let duration = match duration_specifier {
+        "all" => AggregationTimeRange::All,
+        "year" => AggregationTimeRange::LastOneYear,
+        "month" => AggregationTimeRange::LastOneMonth,
+        "week" => AggregationTimeRange::LastOneWeek,
+        "day" => AggregationTimeRange::LastOneDay,
+        duration_specifier => {
+            return HttpResponse::BadRequest().body(format!(
+                "{duration_specifier} is not a recognized duration specifier."
+            ))
+        }
+    };
+
+    let attribution_kind = qs.get("type").unwrap_or("break");
+
+    todo!("fetch ranking from data and return appropriately paginated slice")
 }
 
 #[allow(clippy::unused_async)]
 #[allow(clippy::future_not_send)]
 #[actix_web::get("/api/v1/player-ranks/{uuid}")]
-pub async fn global_ranking_for_player(_req: HttpRequest, path: Path<Uuid>) -> impl Responder {
-    let player_uuid = path.into_inner();
-    // TODO: actual search
+pub async fn player_rank(
+    req: HttpRequest,
+    path: Path<Uuid>,
+    data: web::Data<AppState<'static>>,
+) -> impl Responder {
+    let qs: QString = req.query_string().into();
 
-    HttpResponse::Ok().json(json!({
-        "name": "$THIS_IS_DUMMY",
-        "uuid": player_uuid
-    }))
+    let player_uuid = path.into_inner();
+    let attribution_kind = qs.get("type").unwrap_or("break");
+
+    todo!("fetch ranking from data and return information of the player")
 }

@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use log::{info, trace, warn};
 use seichi_ranking_bff::{
     config::{Config, FromEnv},
-    handlers::{ranking::global_ranking_for_player, ranking::periodic},
+    handlers::{ranking::player_rank, ranking::ranking},
 };
 
 fn setup_logger() -> Result<(), fern::InitError> {
@@ -45,8 +45,8 @@ async fn main() -> Result<()> {
     let http_server = HttpServer::new(|| {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
-            .service(periodic)
-            .service(global_ranking_for_player)
+            .service(ranking)
+            .service(player_rank)
     });
 
     trace!("binding ports");
