@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use serde::Serialize;
 use std::collections::HashSet;
 use std::iter;
@@ -131,10 +132,6 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
     }
 }
 
-pub trait AttributionRecordProvider<Attribution: AggregatedPlayerAttribution> {
-    fn get_all_attribution_records(self) -> Vec<AttributionRecord<Attribution>>;
-}
-
 #[derive(Debug, PartialEq, EnumString, EnumIter)]
 #[strum(serialize_all = "snake_case")]
 pub enum AggregationTimeRange {
@@ -143,4 +140,12 @@ pub enum AggregationTimeRange {
     LastOneMonth,
     LastOneWeek,
     LastOneDay,
+}
+
+#[async_trait]
+pub trait AttributionRecordProvider<Attribution: AggregatedPlayerAttribution> {
+    async fn get_all_attribution_records(
+        &self,
+        time_range: AggregationTimeRange,
+    ) -> Vec<AttributionRecord<Attribution>>;
 }
