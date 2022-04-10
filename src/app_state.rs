@@ -5,13 +5,27 @@ use crate::model::{
 use std::borrow::Borrow;
 use std::sync::RwLock;
 
-#[derive(Default)]
 pub struct LockedRankingsForTimeRanges<Attribution: AggregatedPlayerAttribution> {
     all: RwLock<Ranking<Attribution>>,
     last_one_year: RwLock<Ranking<Attribution>>,
     last_one_month: RwLock<Ranking<Attribution>>,
     last_one_week: RwLock<Ranking<Attribution>>,
     last_one_day: RwLock<Ranking<Attribution>>,
+}
+
+/// We are manually defining this because derived impl requires Default on Attribution
+impl<Attribution: AggregatedPlayerAttribution> Default
+    for LockedRankingsForTimeRanges<Attribution>
+{
+    fn default() -> Self {
+        LockedRankingsForTimeRanges {
+            all: Default::default(),
+            last_one_year: Default::default(),
+            last_one_month: Default::default(),
+            last_one_week: Default::default(),
+            last_one_day: Default::default(),
+        }
+    }
 }
 
 impl<Attribution: AggregatedPlayerAttribution> LockedRankingsForTimeRanges<Attribution> {
