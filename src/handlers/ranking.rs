@@ -30,16 +30,16 @@ fn parse_time_range(time_range_specifier: &str) -> Option<AggregationTimeRange> 
 #[allow(clippy::unused_async)]
 #[allow(clippy::future_not_send)]
 #[actix_web::get("/api/v1/ranking")]
-pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> impl Responder {
+pub async fn ranking(req: HttpRequest, _data: web::Data<&'static AppState>) -> impl Responder {
     let qs: QString = req.query_string().into();
 
     let time_range_specifier = time_range_from_qs(&qs);
-    let time_range = match parse_time_range(time_range_specifier) {
+    let _time_range = match parse_time_range(time_range_specifier) {
         Some(r) => r,
         None => return duration_not_recognized_response(time_range_specifier),
     };
 
-    let attribution_kind = qs.get("type").unwrap_or("break");
+    let _attribution_kind = qs.get("type").unwrap_or("break");
 
     todo!("fetch ranking from data and return appropriately paginated slice")
 }
@@ -50,19 +50,19 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
 pub async fn player_rank(
     req: HttpRequest,
     path: Path<Uuid>,
-    data: web::Data<&'static AppState>,
+    _data: web::Data<&'static AppState>,
 ) -> impl Responder {
-    let player_uuid = path.into_inner();
-
     let qs: QString = req.query_string().into();
 
     let time_range_specifier = time_range_from_qs(&qs);
-    let time_range = match parse_time_range(time_range_specifier) {
+    let _time_range = match parse_time_range(time_range_specifier) {
         Some(r) => r,
         None => return duration_not_recognized_response(time_range_specifier),
     };
 
-    let attribution_kind = qs.get("type").unwrap_or("break");
+    let _attribution_kind = qs.get("type").unwrap_or("break");
+
+    let _player_uuid = path.into_inner();
 
     todo!("fetch ranking from data and return information of the player")
 }

@@ -7,7 +7,7 @@ use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
 use log::{info, trace, warn};
 use once_cell::sync::Lazy;
-use seichi_ranking_bff::app_models::AppState;
+use seichi_ranking_bff::app_models::{AllAttributionRecordProviders, AppState};
 use seichi_ranking_bff::{
     app_models,
     config::{Config, FromEnv},
@@ -36,6 +36,12 @@ fn setup_logger() -> Result<(), fern::InitError> {
     Ok(())
 }
 
+fn attribution_record_providers() -> AllAttributionRecordProviders {
+    todo!()
+}
+
+static APP_STATE_DATA: Lazy<Data<AppState>> = Lazy::new(|| web::Data::new(AppState::default()));
+
 #[actix_web::main]
 async fn main() -> Result<()> {
     println!("starting");
@@ -45,8 +51,6 @@ async fn main() -> Result<()> {
 
     trace!("Reading config...");
     let config = Config::from_env()?;
-
-    static APP_STATE_DATA: Lazy<Data<AppState>> = Lazy::new(|| web::Data::new(Default::default()));
 
     trace!("building HttpServer");
     let http_server_future = HttpServer::new(|| {
@@ -62,7 +66,8 @@ async fn main() -> Result<()> {
     ))?
     .run();
 
-    let rehydration_process = app_models::rehydration_process(&APP_STATE_DATA, todo!());
+    let rehydration_process =
+        app_models::rehydration_process(&APP_STATE_DATA, attribution_record_providers());
 
     select! {
         _ = http_server_future => {

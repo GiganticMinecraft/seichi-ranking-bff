@@ -58,6 +58,6 @@ pub struct AllAttributionRecordProviders {
     pub vote_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
 }
 
-pub async fn rehydration_process(state_ref: &AppState, providers: AllAttributionRecordProviders) {
+pub async fn rehydration_process(_state_ref: &AppState, _providers: AllAttributionRecordProviders) {
     todo!("rehydrate state_ref with providers")
 }
