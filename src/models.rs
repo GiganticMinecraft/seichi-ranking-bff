@@ -76,7 +76,7 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
         records.reverse();
 
         let (first_record, tail_records) = match records.as_slice() {
-            [first, rest @ ..] => (first, rest),
+            [first, tail @ ..] => (first, tail),
             [] => {
                 self.sorted_ranked_records = vec![];
                 return;
