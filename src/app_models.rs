@@ -2,7 +2,9 @@ use crate::models::{
     AggregatedPlayerAttribution, AggregationTimeRange, AttributionRecordProvider, BreakCount,
     BuildCount, PlayTicks, Ranking, VoteCount,
 };
+use anyhow::{Ok, Result};
 use async_lock::RwLock;
+use log::error;
 use std::borrow::Borrow;
 use std::ops::Deref;
 use std::thread::sleep;
@@ -61,45 +63,56 @@ pub struct AllAttributionRecordProviders {
     pub vote_count_provider: Box<dyn AttributionRecordProvider<VoteCount> + Sync + Send>,
 }
 
-async fn rehydrate<Attribution: AggregatedPlayerAttribution>(
+async fn rehydrate_attribution<Attribution: AggregatedPlayerAttribution>(
     locked_rankings: &LockedRankingsForTimeRanges<Attribution>,
     provider: &(dyn AttributionRecordProvider<Attribution> + Sync + Send),
-) {
+) -> Result<()> {
     for time_range in AggregationTimeRange::iter() {
-        let records = provider.get_all_attribution_records(time_range).await;
+        let records = provider.get_all_attribution_records(time_range).await?;
         let mut ranking = locked_rankings.for_time_range(time_range).write().await;
         ranking.hydrate_record_set(records);
     }
+
+    Ok(())
+}
+
+async fn rehydrate_once(
+    state_ref: &AppState,
+    providers: &AllAttributionRecordProviders,
+) -> Result<()> {
+    rehydrate_attribution(
+        &state_ref.break_count_rankings,
+        providers.break_count_provider.deref(),
+    )
+    .await?;
+
+    rehydrate_attribution(
+        &state_ref.build_count_rankings,
+        providers.build_count_provider.deref(),
+    )
+    .await?;
+
+    rehydrate_attribution(
+        &state_ref.play_ticks_rankings,
+        providers.play_ticks_provider.deref(),
+    )
+    .await?;
+
+    rehydrate_attribution(
+        &state_ref.vote_count_rankings,
+        providers.vote_count_provider.deref(),
+    )
+    .await?;
+
+    Ok(())
 }
 
 pub async fn rehydration_process(state_ref: &AppState, providers: AllAttributionRecordProviders) {
     const SLEEP_SECS: u64 = 120;
-
     loop {
-        rehydrate(
-            &state_ref.break_count_rankings,
-            providers.break_count_provider.deref(),
-        )
-        .await;
-
-        rehydrate(
-            &state_ref.build_count_rankings,
-            providers.build_count_provider.deref(),
-        )
-        .await;
-
-        rehydrate(
-            &state_ref.play_ticks_rankings,
-            providers.play_ticks_provider.deref(),
-        )
-        .await;
-
-        rehydrate(
-            &state_ref.vote_count_rankings,
-            providers.vote_count_provider.deref(),
-        )
-        .await;
-
+        if let Err(e) = rehydrate_once(state_ref, &providers).await {
+            error!("Error rehydrating ranking cache: {e}")
+        }
         sleep(std::time::Duration::from_secs(SLEEP_SECS))
     }
 }

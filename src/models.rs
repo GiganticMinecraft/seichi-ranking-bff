@@ -1,3 +1,4 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use serde::Serialize;
 use std::iter;
@@ -151,5 +152,5 @@ pub trait AttributionRecordProvider<Attribution: AggregatedPlayerAttribution> {
     async fn get_all_attribution_records(
         &self,
         time_range: AggregationTimeRange,
-    ) -> Vec<AttributionRecord<Attribution>>;
+    ) -> Result<Vec<AttributionRecord<Attribution>>>;
 }
