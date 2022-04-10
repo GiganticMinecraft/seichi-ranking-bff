@@ -66,8 +66,9 @@ async fn main() -> Result<()> {
     ))?
     .run();
 
-    let rehydration_process =
-        app_models::rehydration_process(&APP_STATE_DATA, attribution_record_providers());
+    let providers = attribution_record_providers();
+
+    let rehydration_process = app_models::rehydration_process(&APP_STATE_DATA, &providers);
 
     select! {
         _ = http_server_future => {
