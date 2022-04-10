@@ -1061,6 +1061,7 @@ dependencies = [
  "envy",
  "fern",
  "log",
+ "once_cell",
  "qstring",
  "rustls",
  "rustls-pemfile",

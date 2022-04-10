@@ -2,17 +2,17 @@
 #![warn(clippy::nursery, clippy::pedantic)]
 #![allow(clippy::cargo_common_metadata)]
 
+use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
 use log::{info, trace, warn};
-use seichi_ranking_bff::app_models::{AppState, LockedRankingsForTimeRanges};
-use seichi_ranking_bff::models::BreakCount;
+use once_cell::sync::Lazy;
+use seichi_ranking_bff::app_models::AppState;
 use seichi_ranking_bff::{
     app_models,
     config::{Config, FromEnv},
     handlers::{ranking::player_rank, ranking::ranking},
 };
-use std::borrow::Borrow;
 use tokio::select;
 
 fn setup_logger() -> Result<(), fern::InitError> {
@@ -46,12 +46,12 @@ async fn main() -> Result<()> {
     trace!("Reading config...");
     let config = Config::from_env()?;
 
-    static APP_STATE: AppState = Default::default();
+    static APP_STATE_DATA: Lazy<Data<AppState>> = Lazy::new(|| web::Data::new(Default::default()));
 
     trace!("building HttpServer");
     let http_server_future = HttpServer::new(|| {
         App::new()
-            .app_data(web::Data::new(APP_STATE.borrow()))
+            .app_data(web::Data::clone(&APP_STATE_DATA))
             .wrap(actix_web::middleware::Logger::default())
             .service(ranking)
             .service(player_rank)
@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
     ))?
     .run();
 
-    let rehydration_process = app_models::rehydration_process(APP_STATE.borrow(), todo!());
+    let rehydration_process = app_models::rehydration_process(&APP_STATE_DATA, todo!());
 
     select! {
         _ = http_server_future => {
