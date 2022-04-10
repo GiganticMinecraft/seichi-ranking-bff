@@ -53,9 +53,9 @@ pub struct AppState {
 
 pub struct AllAttributionRecordProviders {
     pub break_count: Box<dyn AttributionRecordProvider<BreakCount>>,
-    pub build_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
-    pub play_ticks_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
-    pub vote_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
+    pub build_count_provider: Box<dyn AttributionRecordProvider<BuildCount>>,
+    pub play_ticks_provider: Box<dyn AttributionRecordProvider<PlayTicks>>,
+    pub vote_count_provider: Box<dyn AttributionRecordProvider<VoteCount>>,
 }
 
 pub async fn rehydration_process(_state_ref: &AppState, _providers: AllAttributionRecordProviders) {
