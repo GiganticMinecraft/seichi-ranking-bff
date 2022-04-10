@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use serde::Serialize;
-use std::collections::HashSet;
 use std::iter;
 use strum;
 use strum::{EnumIter, EnumString};
@@ -65,14 +64,14 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Default for Ranking<Attri
 }
 
 impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
-    pub fn hydrate_record_set(&mut self, records: HashSet<AttributionRecord<Attribution>>) {
+    pub fn hydrate_record_set(&mut self, records: Vec<AttributionRecord<Attribution>>) {
         struct ScanState<Attribution> {
             next_item_index: usize,
             previous_attribution: Attribution,
             previous_item_rank: u32,
         }
 
-        let mut records = records.into_iter().collect::<Vec<_>>();
+        let mut records = records;
         records.sort_by_key(|ar| ar.attribution.clone());
         records.reverse();
 
@@ -132,7 +131,7 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
     }
 }
 
-#[derive(Debug, PartialEq, EnumString, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, EnumString, EnumIter)]
 #[strum(serialize_all = "snake_case")]
 pub enum AggregationTimeRange {
     #[strum(serialize = "all")]

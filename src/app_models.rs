@@ -2,8 +2,11 @@ use crate::models::{
     AggregatedPlayerAttribution, AggregationTimeRange, AttributionRecordProvider, BreakCount,
     BuildCount, PlayTicks, Ranking, VoteCount,
 };
+use async_lock::RwLock;
 use std::borrow::Borrow;
-use std::sync::RwLock;
+use std::ops::Deref;
+use std::thread::sleep;
+use strum::IntoEnumIterator;
 
 pub struct LockedRankingsForTimeRanges<Attribution: AggregatedPlayerAttribution> {
     all: RwLock<Ranking<Attribution>>,
@@ -52,12 +55,51 @@ pub struct AppState {
 }
 
 pub struct AllAttributionRecordProviders {
-    pub break_count: Box<dyn AttributionRecordProvider<BreakCount>>,
+    pub break_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
     pub build_count_provider: Box<dyn AttributionRecordProvider<BuildCount>>,
     pub play_ticks_provider: Box<dyn AttributionRecordProvider<PlayTicks>>,
     pub vote_count_provider: Box<dyn AttributionRecordProvider<VoteCount>>,
 }
 
-pub async fn rehydration_process(_state_ref: &AppState, _providers: AllAttributionRecordProviders) {
-    todo!("rehydrate state_ref with providers")
+async fn rehydrate<Attribution: AggregatedPlayerAttribution>(
+    locked_rankings: &LockedRankingsForTimeRanges<Attribution>,
+    provider: &dyn AttributionRecordProvider<Attribution>,
+) {
+    for time_range in AggregationTimeRange::iter() {
+        let records = provider.get_all_attribution_records(time_range).await;
+        let mut ranking = locked_rankings.for_time_range(time_range).write().await;
+        ranking.hydrate_record_set(records);
+    }
+}
+
+pub async fn rehydration_process(state_ref: &AppState, providers: &AllAttributionRecordProviders) {
+    const SLEEP_SECS: u64 = 120;
+
+    loop {
+        rehydrate(
+            &state_ref.break_count_rankings,
+            providers.break_count_provider.deref(),
+        )
+        .await;
+
+        rehydrate(
+            &state_ref.build_count_rankings,
+            providers.build_count_provider.deref(),
+        )
+        .await;
+
+        rehydrate(
+            &state_ref.play_ticks_rankings,
+            providers.play_ticks_provider.deref(),
+        )
+        .await;
+
+        rehydrate(
+            &state_ref.vote_count_rankings,
+            providers.vote_count_provider.deref(),
+        )
+        .await;
+
+        sleep(std::time::Duration::from_secs(SLEEP_SECS))
+    }
 }
