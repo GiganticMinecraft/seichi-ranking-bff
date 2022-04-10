@@ -135,10 +135,15 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
 #[derive(Debug, PartialEq, EnumString, EnumIter)]
 #[strum(serialize_all = "snake_case")]
 pub enum AggregationTimeRange {
+    #[strum(serialize = "all")]
     All,
+    #[strum(serialize = "year")]
     LastOneYear,
+    #[strum(serialize = "month")]
     LastOneMonth,
+    #[strum(serialize = "week")]
     LastOneWeek,
+    #[strum(serialize = "day")]
     LastOneDay,
 }
 
