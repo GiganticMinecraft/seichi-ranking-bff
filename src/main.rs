@@ -8,10 +8,12 @@ use log::{info, trace, warn};
 use seichi_ranking_bff::app_models::{AppState, LockedRankingsForTimeRanges};
 use seichi_ranking_bff::models::BreakCount;
 use seichi_ranking_bff::{
+    app_models,
     config::{Config, FromEnv},
     handlers::{ranking::player_rank, ranking::ranking},
 };
 use std::borrow::Borrow;
+use tokio::select;
 
 fn setup_logger() -> Result<(), fern::InitError> {
     use fern::colors::ColoredLevelConfig;
@@ -60,6 +62,16 @@ async fn main() -> Result<()> {
     ))?
     .run();
 
-    info!("stopped");
+    let rehydration_process = app_models::rehydration_process(APP_STATE.borrow(), todo!());
+
+    select! {
+        _ = http_server_future => {
+            info!("stopped");
+        }
+        _ = rehydration_process => {
+            panic!("Rehydration process terminated for an abnormal reason, we must shut down the server")
+        }
+    }
+
     Ok(())
 }

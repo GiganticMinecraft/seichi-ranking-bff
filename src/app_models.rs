@@ -1,6 +1,6 @@
 use crate::models::{
-    AggregatedPlayerAttribution, AggregationTimeRange, BreakCount, BuildCount, PlayTicks, Ranking,
-    VoteCount,
+    AggregatedPlayerAttribution, AggregationTimeRange, AttributionRecordProvider, BreakCount,
+    BuildCount, PlayTicks, Ranking, VoteCount,
 };
 use std::borrow::Borrow;
 use std::sync::RwLock;
@@ -49,4 +49,18 @@ pub struct AppState {
     pub build_count_rankings: LockedRankingsForTimeRanges<BuildCount>,
     pub play_ticks_rankings: LockedRankingsForTimeRanges<PlayTicks>,
     pub vote_count_rankings: LockedRankingsForTimeRanges<VoteCount>,
+}
+
+trait AllAttributionRecordProviders {
+    fn break_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
+    fn build_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
+    fn play_ticks_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
+    fn vote_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
+}
+
+pub async fn rehydration_process(
+    state_ref: &'static AppState,
+    providers: impl AllAttributionRecordProviders,
+) {
+    todo!("rehydrate state_ref with providers")
 }
