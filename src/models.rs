@@ -43,11 +43,11 @@ pub struct RankedAttributionRecord<Attribution: AggregatedPlayerAttribution> {
 }
 
 pub struct Ranking<Attribution: AggregatedPlayerAttribution> {
-    /// invariant: these records are sorted and given "ranks" so that
-    ///  - `.rank` is increasing
-    ///  - for each index i, either
-    ///    - `sorted_ranked_records[i].rank.0` equals `i + 1` (i.e. there is only one record with rank i + 1), or
-    ///    - there is some r < i such that `sorted_ranked_records[j].rank.0 == r + 1` for all r ≤ j ≤ i (i.e. there are ties)
+    /// 不変条件: `sorted_ranked_records` は「順位」が与えられており、次の条件を常に満たす。
+    ///  - 任意の添え字 `i` について、
+    ///    非負整数 `r ≤ i` が存在し、
+    ///    すべての `r ≤ j ≤ i` について、
+    ///    `sorted_ranked_records[j].rank.0 == r + 1`
     sorted_ranked_records: Vec<RankedAttributionRecord<Attribution>>,
 }
 

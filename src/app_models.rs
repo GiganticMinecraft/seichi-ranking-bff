@@ -16,7 +16,7 @@ pub struct LockedRankingsForTimeRanges<Attribution: AggregatedPlayerAttribution>
     last_one_day: RwLock<Ranking<Attribution>>,
 }
 
-/// We are manually defining this because derived impl requires Default on Attribution
+/// `derive` すると `Attribution` に `Default` 制約が付いてしまうので、手動でimplしている
 impl<Attribution: AggregatedPlayerAttribution> Default
     for LockedRankingsForTimeRanges<Attribution>
 {
