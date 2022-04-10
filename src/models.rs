@@ -120,7 +120,7 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
     }
 
     pub fn paginate(&self, offset: usize, limit: usize) -> RankingSlice<Attribution> {
-        RankingSlice(self.sorted_ranked_records.as_slice()[offset..(offset + limit)].to_vec())
+        RankingSlice(self.sorted_ranked_records[offset..(offset + limit)].to_vec())
     }
 
     pub fn record_with_uuid(&self, uuid: Uuid) -> Option<RankedAttributionRecord<Attribution>> {
