@@ -51,16 +51,13 @@ pub struct AppState {
     pub vote_count_rankings: LockedRankingsForTimeRanges<VoteCount>,
 }
 
-trait AllAttributionRecordProviders {
-    fn break_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
-    fn build_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
-    fn play_ticks_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
-    fn vote_count_provider(&self) -> dyn AttributionRecordProvider<BreakCount>;
+pub struct AllAttributionRecordProviders {
+    pub break_count: Box<dyn AttributionRecordProvider<BreakCount>>,
+    pub build_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
+    pub play_ticks_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
+    pub vote_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
 }
 
-pub async fn rehydration_process(
-    state_ref: &'static AppState,
-    providers: impl AllAttributionRecordProviders,
-) {
+pub async fn rehydration_process(state_ref: &AppState, providers: AllAttributionRecordProviders) {
     todo!("rehydrate state_ref with providers")
 }
