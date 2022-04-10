@@ -5,8 +5,8 @@
 use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
 use log::{info, trace, warn};
-use seichi_ranking_bff::app_state::{AppState, LockedRankingsForTimeRanges};
-use seichi_ranking_bff::model::BreakCount;
+use seichi_ranking_bff::app_models::{AppState, LockedRankingsForTimeRanges};
+use seichi_ranking_bff::models::BreakCount;
 use seichi_ranking_bff::{
     config::{Config, FromEnv},
     handlers::{ranking::player_rank, ranking::ranking},

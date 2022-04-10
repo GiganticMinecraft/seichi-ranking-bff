@@ -1,4 +1,4 @@
-use crate::model::{
+use crate::models::{
     AggregatedPlayerAttribution, AggregationTimeRange, BreakCount, BuildCount, PlayTicks, Ranking,
     VoteCount,
 };

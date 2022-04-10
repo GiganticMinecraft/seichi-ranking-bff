@@ -1,5 +1,5 @@
-use crate::app_state::AppState;
-use crate::model::AggregationTimeRange;
+use crate::app_models::AppState;
+use crate::models::AggregationTimeRange;
 use actix_web::web::Path;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use qstring::QString;
