@@ -13,7 +13,6 @@ use seichi_ranking_bff::{
     config::{Config, FromEnv},
     handlers::{ranking::player_rank, ranking::ranking},
 };
-use tokio::select;
 
 fn setup_logger() -> Result<(), fern::InitError> {
     use fern::colors::ColoredLevelConfig;
@@ -55,7 +54,7 @@ async fn main() -> Result<()> {
     trace!("building HttpServer");
     let http_server_future = HttpServer::new(|| {
         App::new()
-            .app_data(web::Data::clone(&APP_STATE_DATA))
+            .app_data(&APP_STATE_DATA)
             .wrap(actix_web::middleware::Logger::default())
             .service(ranking)
             .service(player_rank)
@@ -66,18 +65,12 @@ async fn main() -> Result<()> {
     ))?
     .run();
 
-    let providers = attribution_record_providers();
+    tokio::spawn(async {
+        let providers = attribution_record_providers();
+        app_models::rehydration_process(&APP_STATE_DATA, providers).await;
+    });
 
-    let rehydration_process = app_models::rehydration_process(&APP_STATE_DATA, &providers);
-
-    select! {
-        _ = http_server_future => {
-            info!("stopped");
-        }
-        _ = rehydration_process => {
-            panic!("Rehydration process terminated for an abnormal reason, we must shut down the server")
-        }
-    }
-
+    http_server_future.await.unwrap();
+    info!("stopped");
     Ok(())
 }

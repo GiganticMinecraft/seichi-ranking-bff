@@ -55,15 +55,15 @@ pub struct AppState {
 }
 
 pub struct AllAttributionRecordProviders {
-    pub break_count_provider: Box<dyn AttributionRecordProvider<BreakCount>>,
-    pub build_count_provider: Box<dyn AttributionRecordProvider<BuildCount>>,
-    pub play_ticks_provider: Box<dyn AttributionRecordProvider<PlayTicks>>,
-    pub vote_count_provider: Box<dyn AttributionRecordProvider<VoteCount>>,
+    pub break_count_provider: Box<dyn AttributionRecordProvider<BreakCount> + Sync + Send>,
+    pub build_count_provider: Box<dyn AttributionRecordProvider<BuildCount> + Sync + Send>,
+    pub play_ticks_provider: Box<dyn AttributionRecordProvider<PlayTicks> + Sync + Send>,
+    pub vote_count_provider: Box<dyn AttributionRecordProvider<VoteCount> + Sync + Send>,
 }
 
 async fn rehydrate<Attribution: AggregatedPlayerAttribution>(
     locked_rankings: &LockedRankingsForTimeRanges<Attribution>,
-    provider: &dyn AttributionRecordProvider<Attribution>,
+    provider: &(dyn AttributionRecordProvider<Attribution> + Sync + Send),
 ) {
     for time_range in AggregationTimeRange::iter() {
         let records = provider.get_all_attribution_records(time_range).await;
@@ -72,7 +72,7 @@ async fn rehydrate<Attribution: AggregatedPlayerAttribution>(
     }
 }
 
-pub async fn rehydration_process(state_ref: &AppState, providers: &AllAttributionRecordProviders) {
+pub async fn rehydration_process(state_ref: &AppState, providers: AllAttributionRecordProviders) {
     const SLEEP_SECS: u64 = 120;
 
     loop {
