@@ -2,68 +2,49 @@
 #![warn(clippy::nursery, clippy::pedantic)]
 #![allow(clippy::cargo_common_metadata)]
 
-mod config;
-mod handler;
-mod model;
-
-use crate::config::{Config, FromEnv};
-use crate::handler::ranking::player::global_ranking_for_player;
-use crate::handler::search::player::search;
-use actix_web::error::JsonPayloadError;
-use actix_web::{App, HttpRequest, HttpResponse, HttpServer};
+use actix_web::web::Data;
+use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
-use log::{error, info, trace, warn};
+use log::{info, trace, warn};
+use once_cell::sync::Lazy;
+use seichi_ranking_bff::app_models::{AllAttributionRecordProviders, AppState};
+use seichi_ranking_bff::{
+    app_models,
+    config::{Config, FromEnv},
+    handlers::{ranking::player_rank, ranking::ranking},
+};
 
-struct Initialization;
+fn setup_logger() -> Result<(), fern::InitError> {
+    use fern::colors::ColoredLevelConfig;
+    let colors = ColoredLevelConfig::new();
 
-impl Initialization {
-    fn setup_logger() -> Result<(), fern::InitError> {
-        use fern::colors::ColoredLevelConfig;
-        let colors = ColoredLevelConfig::new();
-
-        fern::Dispatch::new()
-            .format(move |out, message, record| {
-                out.finish(format_args!(
-                    "{}[{}][{}] {}",
-                    chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
-                    record.target(),
-                    colors.color(record.level()),
-                    message
-                ));
-            })
-            .level(log::LevelFilter::Trace)
-            .chain(std::io::stdout())
-            .chain(fern::log_file("output.log")?)
-            .apply()?;
-        Ok(())
-    }
+    fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                record.target(),
+                colors.color(record.level()),
+                message
+            ));
+        })
+        .level(log::LevelFilter::Trace)
+        .chain(std::io::stdout())
+        .chain(fern::log_file("output.log")?)
+        .apply()?;
+    Ok(())
 }
 
-fn json_error_handler(
-    err: actix_web::error::JsonPayloadError,
-    req: &HttpRequest,
-) -> actix_web::error::Error {
-    use actix_web::error::InternalError;
-    let detail = err.to_string();
-    error!("error during handling JSON, in {:?}: {:?}", req, err);
-
-    let resp = match &err {
-        JsonPayloadError::ContentType => HttpResponse::UnsupportedMediaType().body(detail),
-        JsonPayloadError::Deserialize(json_err) if json_err.is_data() => {
-            HttpResponse::UnprocessableEntity().body(detail)
-        }
-        _ => HttpResponse::BadRequest().body(detail),
-    };
-    InternalError::from_response(err, resp).into()
+fn attribution_record_providers() -> AllAttributionRecordProviders {
+    todo!()
 }
+
+static APP_STATE_DATA: Lazy<Data<AppState>> = Lazy::new(|| web::Data::new(AppState::default()));
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    // This function contains code snippet which is licensed with Apache License 2.0
-    // from https://github.com/actix/examples.
-    // See https://www.apache.org/licenses/LICENSE-2.0.txt for full text.
     println!("starting");
-    if let Err(err) = Initialization::setup_logger().context("failed to setup logger") {
+    if let Err(err) = setup_logger().context("failed to setup logger") {
         eprintln!("failed to initialize logger: {err:?}");
     }
 
@@ -71,26 +52,25 @@ async fn main() -> Result<()> {
     let config = Config::from_env()?;
 
     trace!("building HttpServer");
-    let http_server = HttpServer::new(|| {
-        use crate::handler::ranking::periodic::periodic;
-
+    let http_server_future = HttpServer::new(|| {
         App::new()
+            .app_data(&APP_STATE_DATA)
             .wrap(actix_web::middleware::Logger::default())
-            .app_data(json_error_handler)
-            .service(periodic)
-            .service(global_ranking_for_player)
-            .service(search)
+            .service(ranking)
+            .service(player_rank)
+    })
+    .bind(format!(
+        "{}:{}",
+        config.http_config.host, config.http_config.port.0
+    ))?
+    .run();
+
+    tokio::spawn(async {
+        let providers = attribution_record_providers();
+        app_models::rehydration_process(&APP_STATE_DATA, providers).await;
     });
-    trace!("binding ports");
 
-    http_server
-        .bind(format!(
-            "{}:{}",
-            config.http_config.host, config.http_config.port.0
-        ))?
-        .run()
-        .await?;
-
+    http_server_future.await.unwrap();
     info!("stopped");
     Ok(())
 }

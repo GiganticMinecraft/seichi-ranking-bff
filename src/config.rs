@@ -20,8 +20,8 @@ impl<T: FromEnvLikeKeyValuePairs> FromEnv for T {
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub(crate) database_authorization: DatabaseAuthorizationInfo,
-    pub(crate) http_config: HttpConfig,
+    pub database_authorization: DatabaseAuthorizationInfo,
+    pub http_config: HttpConfig,
 }
 
 impl FromEnvLikeKeyValuePairs for Config {
@@ -36,10 +36,10 @@ impl FromEnvLikeKeyValuePairs for Config {
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 pub struct DatabaseAuthorizationInfo {
-    pub(crate) host: String,
-    pub(crate) port: Port,
-    pub(crate) user: String,
-    pub(crate) password: String,
+    pub host: String,
+    pub port: Port,
+    pub user: String,
+    pub password: String,
 }
 
 impl FromEnvLikeKeyValuePairs for DatabaseAuthorizationInfo {
@@ -55,19 +55,18 @@ pub struct HttpConfig {
     pub port: Port,
 }
 
+#[derive(Serialize, Deserialize, Eq, PartialEq, Debug)]
+pub struct Port(pub u16);
+
 impl FromEnvLikeKeyValuePairs for HttpConfig {
     fn from_iter(iter: impl Iterator<Item = (String, String)>) -> Result<Self, Error> {
         envy::prefixed("HTTP_").from_iter(iter)
     }
 }
 
-#[derive(Serialize, Deserialize, Eq, PartialEq, Debug)]
-pub struct Port(pub(crate) u16);
-
 #[cfg(test)]
 mod test {
-    use crate::config::FromEnvLikeKeyValuePairs;
-    use crate::Config;
+    use crate::config::{Config, FromEnvLikeKeyValuePairs};
 
     #[test]
     fn read_config_from_iterator() {
