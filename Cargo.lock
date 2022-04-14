@@ -1013,15 +1013,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustls-pemfile"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7522c9de787ff061458fe9a829dc790a3f5b22dc571694fc5883f448b94d9a9"
-dependencies = [
- "base64",
-]
-
-[[package]]
 name = "rustversion"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1063,8 +1054,6 @@ dependencies = [
  "log",
  "once_cell",
  "qstring",
- "rustls",
- "rustls-pemfile",
  "serde",
  "serde_json",
  "strum",
