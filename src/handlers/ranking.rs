@@ -95,6 +95,16 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
     }
 }
 
+fn record_with_uuid_not_found(
+    attribution_kind: &str,
+    time_range: AggregationTimeRange,
+    uuid: Uuid,
+) -> HttpResponse<BoxBody> {
+    HttpResponse::BadRequest().body(format!(
+        "record with {uuid} for kind={attribution_kind}, time-range={time_range} not found"
+    ))
+}
+
 #[allow(clippy::future_not_send)]
 #[actix_web::get("/api/v1/player-ranks/{uuid}")]
 pub async fn player_rank(
@@ -116,42 +126,70 @@ pub async fn player_rank(
 
     match attribution_kind {
         "break" => {
-            let _record = data
+            let record_option = data
                 .break_count_rankings
                 .for_time_range(time_range)
                 .read()
                 .await
                 .record_with_uuid(player_uuid);
 
+            let _record = match record_option {
+                Some(r) => r,
+                None => {
+                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
+                }
+            };
+
             todo!()
         }
         "build" => {
-            let _record = data
+            let record_option = data
                 .build_count_rankings
                 .for_time_range(time_range)
                 .read()
                 .await
                 .record_with_uuid(player_uuid);
 
+            let _record = match record_option {
+                Some(r) => r,
+                None => {
+                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
+                }
+            };
+
             todo!()
         }
         "play_ticks" => {
-            let _record = data
+            let record_option = data
                 .play_ticks_rankings
                 .for_time_range(time_range)
                 .read()
                 .await
                 .record_with_uuid(player_uuid);
 
+            let _record = match record_option {
+                Some(r) => r,
+                None => {
+                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
+                }
+            };
+
             todo!()
         }
         "vote_count" => {
-            let _record = data
+            let record_option = data
                 .vote_count_rankings
                 .for_time_range(time_range)
                 .read()
                 .await
                 .record_with_uuid(player_uuid);
+
+            let _record = match record_option {
+                Some(r) => r,
+                None => {
+                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
+                }
+            };
 
             todo!()
         }

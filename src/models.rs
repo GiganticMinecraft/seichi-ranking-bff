@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use serde::Serialize;
 use std::iter;
 use strum;
-use strum::{EnumIter, EnumString};
+use strum::{Display, EnumIter, EnumString};
 use uuid::Uuid;
 
 #[derive(Serialize, Clone)]
@@ -132,7 +132,7 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, EnumString, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, EnumString, EnumIter, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum AggregationTimeRange {
     #[strum(serialize = "all")]
