@@ -52,7 +52,7 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
 
     match attribution_kind {
         "break" => {
-            let _pagenated_ranking = data
+            let _paginated_ranking = data
                 .break_count_rankings
                 .for_time_range(time_range)
                 .read()
@@ -62,7 +62,7 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
             todo!()
         }
         "build" => {
-            let _pagenated_ranking = data
+            let _paginated_ranking = data
                 .build_count_rankings
                 .for_time_range(time_range)
                 .read()
@@ -72,7 +72,7 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
             todo!()
         }
         "play_ticks" => {
-            let _pagenated_ranking = data
+            let _paginated_ranking = data
                 .play_ticks_rankings
                 .for_time_range(time_range)
                 .read()
@@ -82,7 +82,7 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
             todo!()
         }
         "vote_count" => {
-            let _pagenated_ranking = data
+            let _paginated_ranking = data
                 .vote_count_rankings
                 .for_time_range(time_range)
                 .read()
