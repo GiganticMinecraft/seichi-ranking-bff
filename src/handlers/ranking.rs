@@ -31,7 +31,7 @@ fn parse_usize_param(qs: &QString, param_name: &str) -> Option<usize> {
 const RANKING_MAX_LIMIT_PER_REQUEST: usize = 1000;
 
 #[allow(clippy::future_not_send)]
-#[actix_web::get("/api/ranking")]
+#[actix_web::get("/ranking")]
 pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> impl Responder {
     let qs: QString = req.query_string().into();
 
@@ -106,7 +106,7 @@ fn record_with_uuid_not_found(
 }
 
 #[allow(clippy::future_not_send)]
-#[actix_web::get("/api/player-ranks/{uuid}")]
+#[actix_web::get("/player-ranks/{uuid}")]
 pub async fn player_rank(
     req: HttpRequest,
     path: Path<Uuid>,
