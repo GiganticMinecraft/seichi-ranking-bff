@@ -1,15 +1,16 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use serde::Serialize;
+use chrono::{DateTime, Utc};
 use std::iter;
 use strum;
-use strum::{EnumIter, EnumString};
+use strum::{Display, EnumIter, EnumString};
 use uuid::Uuid;
 
-#[derive(Serialize, Clone)]
+#[derive(Clone)]
 pub struct Player {
-    uuid: Uuid,
-    name: String,
+    pub uuid: Uuid,
+    pub name: String,
+    pub last_quit: DateTime<Utc>,
 }
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Clone)]
@@ -24,12 +25,24 @@ pub struct PlayTicks(u64);
 #[derive(PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub struct VoteCount(u64);
 
-pub trait AggregatedPlayerAttribution: Ord + Clone {}
+pub trait AggregatedPlayerAttribution: Ord + Clone {
+    fn raw_u64_data(&self) -> u64;
+}
 
-impl AggregatedPlayerAttribution for BreakCount {}
-impl AggregatedPlayerAttribution for BuildCount {}
-impl AggregatedPlayerAttribution for PlayTicks {}
-impl AggregatedPlayerAttribution for VoteCount {}
+macro_rules! impl_aggregated_player_attribution_for_u64_tuple {
+    ($attribution_struct:ident) => {
+        impl AggregatedPlayerAttribution for $attribution_struct {
+            fn raw_u64_data(&self) -> u64 {
+                self.0
+            }
+        }
+    };
+}
+
+impl_aggregated_player_attribution_for_u64_tuple!(BreakCount);
+impl_aggregated_player_attribution_for_u64_tuple!(BuildCount);
+impl_aggregated_player_attribution_for_u64_tuple!(PlayTicks);
+impl_aggregated_player_attribution_for_u64_tuple!(VoteCount);
 
 #[derive(Clone)]
 pub struct AttributionRecord<Attribution: AggregatedPlayerAttribution> {
@@ -132,7 +145,7 @@ impl<Attribution: AggregatedPlayerAttribution + Clone> Ranking<Attribution> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, EnumString, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, EnumString, EnumIter, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum AggregationTimeRange {
     #[strum(serialize = "all")]
