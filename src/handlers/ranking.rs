@@ -1,4 +1,8 @@
 use crate::app_models::AppState;
+use crate::handlers::presentation_models::{
+    ranked_record_to_presentation_player_ranking_record,
+    ranked_record_to_presentation_ranking_record,
+};
 use crate::models::AggregationTimeRange;
 use actix_web::body::BoxBody;
 use actix_web::web::Path;
@@ -50,47 +54,29 @@ pub async fn ranking(req: HttpRequest, data: web::Data<&'static AppState>) -> im
 
     let attribution_kind = qs.get("type").unwrap_or("break");
 
+    macro_rules! respond_using {
+        ($ranking:expr) => {{
+            let paginated_ranking = $ranking
+                .for_time_range(time_range)
+                .read()
+                .await
+                .paginate(offset, limit);
+
+            HttpResponse::Ok().json(
+                paginated_ranking
+                    .0
+                    .into_iter()
+                    .map(|r| ranked_record_to_presentation_player_ranking_record(&r))
+                    .collect::<Vec<_>>(),
+            )
+        }};
+    }
+
     match attribution_kind {
-        "break" => {
-            let _paginated_ranking = data
-                .break_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .paginate(offset, limit);
-
-            todo!()
-        }
-        "build" => {
-            let _paginated_ranking = data
-                .build_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .paginate(offset, limit);
-
-            todo!()
-        }
-        "play_ticks" => {
-            let _paginated_ranking = data
-                .play_ticks_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .paginate(offset, limit);
-
-            todo!()
-        }
-        "vote_count" => {
-            let _paginated_ranking = data
-                .vote_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .paginate(offset, limit);
-
-            todo!()
-        }
+        "break" => respond_using!(data.break_count_rankings),
+        "build" => respond_using!(data.build_count_rankings),
+        "play_ticks" => respond_using!(data.play_ticks_rankings),
+        "vote_count" => respond_using!(data.vote_count_rankings),
         other => unknown_attribution_kind(other),
     }
 }
@@ -100,7 +86,7 @@ fn record_with_uuid_not_found(
     time_range: AggregationTimeRange,
     uuid: Uuid,
 ) -> HttpResponse<BoxBody> {
-    HttpResponse::BadRequest().body(format!(
+    HttpResponse::NotFound().body(format!(
         "record with {uuid} for kind={attribution_kind}, time-range={time_range} not found"
     ))
 }
@@ -124,75 +110,30 @@ pub async fn player_rank(
 
     let player_uuid = path.into_inner();
 
+    macro_rules! respond_using {
+        ($ranking:expr) => {{
+            let record_option = $ranking
+                .for_time_range(time_range)
+                .read()
+                .await
+                .record_with_uuid(player_uuid);
+
+            let record = match record_option {
+                Some(r) => r,
+                None => {
+                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
+                }
+            };
+
+            HttpResponse::Ok().json(ranked_record_to_presentation_ranking_record(&record))
+        }};
+    }
+
     match attribution_kind {
-        "break" => {
-            let record_option = data
-                .break_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .record_with_uuid(player_uuid);
-
-            let _record = match record_option {
-                Some(r) => r,
-                None => {
-                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
-                }
-            };
-
-            todo!()
-        }
-        "build" => {
-            let record_option = data
-                .build_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .record_with_uuid(player_uuid);
-
-            let _record = match record_option {
-                Some(r) => r,
-                None => {
-                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
-                }
-            };
-
-            todo!()
-        }
-        "play_ticks" => {
-            let record_option = data
-                .play_ticks_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .record_with_uuid(player_uuid);
-
-            let _record = match record_option {
-                Some(r) => r,
-                None => {
-                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
-                }
-            };
-
-            todo!()
-        }
-        "vote_count" => {
-            let record_option = data
-                .vote_count_rankings
-                .for_time_range(time_range)
-                .read()
-                .await
-                .record_with_uuid(player_uuid);
-
-            let _record = match record_option {
-                Some(r) => r,
-                None => {
-                    return record_with_uuid_not_found(attribution_kind, time_range, player_uuid)
-                }
-            };
-
-            todo!()
-        }
+        "break" => respond_using!(data.break_count_rankings),
+        "build" => respond_using!(data.build_count_rankings),
+        "play_ticks" => respond_using!(data.play_ticks_rankings),
+        "vote_count" => respond_using!(data.vote_count_rankings),
         other => unknown_attribution_kind(other),
     }
 }
