@@ -25,12 +25,24 @@ pub struct PlayTicks(u64);
 #[derive(PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub struct VoteCount(u64);
 
-pub trait AggregatedPlayerAttribution: Ord + Clone {}
+pub trait AggregatedPlayerAttribution: Ord + Clone {
+    fn raw_u64_data(&self) -> u64;
+}
 
-impl AggregatedPlayerAttribution for BreakCount {}
-impl AggregatedPlayerAttribution for BuildCount {}
-impl AggregatedPlayerAttribution for PlayTicks {}
-impl AggregatedPlayerAttribution for VoteCount {}
+macro_rules! impl_aggregated_player_attribution_for_u64_tuple {
+    ($attribution_struct:ident) => {
+        impl AggregatedPlayerAttribution for $attribution_struct {
+            fn raw_u64_data(&self) -> u64 {
+                self.0
+            }
+        }
+    };
+}
+
+impl_aggregated_player_attribution_for_u64_tuple!(BreakCount);
+impl_aggregated_player_attribution_for_u64_tuple!(BuildCount);
+impl_aggregated_player_attribution_for_u64_tuple!(PlayTicks);
+impl_aggregated_player_attribution_for_u64_tuple!(VoteCount);
 
 #[derive(Clone)]
 pub struct AttributionRecord<Attribution: AggregatedPlayerAttribution> {
