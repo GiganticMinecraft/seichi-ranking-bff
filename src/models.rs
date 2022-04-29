@@ -1,15 +1,16 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use serde::Serialize;
+use chrono::{DateTime, Utc};
 use std::iter;
 use strum;
 use strum::{Display, EnumIter, EnumString};
 use uuid::Uuid;
 
-#[derive(Serialize, Clone)]
+#[derive(Clone)]
 pub struct Player {
-    uuid: Uuid,
-    name: String,
+    pub uuid: Uuid,
+    pub name: String,
+    pub last_quit: DateTime<Utc>,
 }
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Clone)]
