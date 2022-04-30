@@ -1,6 +1,6 @@
 # SeichiRankingBFF
 
-[整地鯖ランキング](https://ranking-gigantic.seichi.click/)を[PHP](https://github.com/GiganticMinecraft/SeichiRanking)からRustに書き直したやつ。
+[整地鯖ランキング](https://ranking-gigantic.seichi.click/)を[PHP](https://github.com/GiganticMinecraft/SeichiRanking)のバックエンド部分を分離してRustで再実装しているレポジトリです。
 
 ## 環境変数
 
