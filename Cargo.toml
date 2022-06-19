@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 actix-web = { version = "4.0.1", features = ["rustls"] }
-anyhow = "1.0.57"
+anyhow = "1.0.58"
 async-lock = "2.5.0"
 async-trait = "0.1.56"
 chrono = { version = "0.4.19", features = ["serde"] }
