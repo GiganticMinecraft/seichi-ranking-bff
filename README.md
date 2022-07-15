@@ -1,4 +1,4 @@
-# SeichiRankingBFF
+# seichi-ranking-bff
 
 [整地鯖ランキング](https://ranking-gigantic.seichi.click/)を[PHP](https://github.com/GiganticMinecraft/SeichiRanking)のバックエンド部分を分離してRustで再実装しているレポジトリです。
 
