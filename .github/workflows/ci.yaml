@@ -7,7 +7,7 @@ on:
       - '**.md'
 
 env:
-  IMAGE: ghcr.io/giganticminecraft/seichirankingbff
+  IMAGE: ghcr.io/giganticminecraft/seichi-ranking-bff
 
 jobs:
   lint-and-test:
